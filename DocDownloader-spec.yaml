@@ -1,0 +1,61 @@
+openapi: 3.0.0
+info:
+  version: 0.0.1
+  title: Courts Document Downloader API
+  description: Courts File Download API 
+servers:
+  - url: "http://localhost:8080"
+tags:
+  - name: Document Downloader API
+paths:
+  /fetch:
+    post:
+      summary: File Tranfer Request
+      tags:
+        - File Transfer
+      description: File Transfer Request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/filetransfer_request"
+      responses:
+        '202':
+          description: 'Accepted for processing'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/filetransfer_response"
+  /ping:
+   get:
+      summary: Back end connectivity
+      tags: 
+        - Utilities
+      description: Back end connectivity
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ping_response"
+components:
+  schemas:
+    filetransfer_request:
+      type: object
+      required:
+        - obj_guid
+      properties:
+        obj_guid: 
+           type: string
+           format: byte
+           description: 'An Object Guid as base64'  
+    filetransfer_response:
+      type: object
+      properties:
+        acknowledge:
+          type: boolean
+        detail: 
+          type: string  
+    ping_response:
+      type: string
