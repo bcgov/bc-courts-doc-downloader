@@ -11,7 +11,7 @@ public class PingController implements PingApi {
 
 	@Override
 	public ResponseEntity<String> pingGet() {
-		//TODO 
+		//TODO - Add ORDS ping to response
 		return new ResponseEntity<String>("Pong", HttpStatus.OK);
 	}
 }
