@@ -206,8 +206,6 @@ public class OrdsDocumentLookupService {
 		resp = restTemplate.exchange(props.getOrdsEndpoint() + "/health", HttpMethod.GET,
 				new HttpEntity<OrdsHealthResponse>(createHeaders()), OrdsHealthResponse.class);
 
-		logger.info("Success.");
-
 		return CompletableFuture.completedFuture(resp);
 
 	}
