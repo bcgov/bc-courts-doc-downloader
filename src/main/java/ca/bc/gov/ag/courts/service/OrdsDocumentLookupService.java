@@ -11,21 +11,28 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import ca.bc.gov.ag.courts.config.AppProperties;
 import ca.bc.gov.ag.courts.model.GetFileResponse;
 import ca.bc.gov.ag.courts.model.InitializeRequest;
 import ca.bc.gov.ag.courts.model.InitializeResponse;
 import ca.bc.gov.ag.courts.model.Job;
+import ca.bc.gov.ag.courts.model.OrdsHealthResponse;
 
 @Service
 public class OrdsDocumentLookupService {
@@ -34,28 +41,14 @@ public class OrdsDocumentLookupService {
 
 	private final RestTemplate restTemplate;
 	
-	@Value("${ords.endpoint}")
-	private String ordsEndpoint; 
-	
-	@Value("${ords.auth.password}")
-	private String ordsPassword; 
-	
-	@Value("${ords.auth.username}")
-	private String ordsUserName; 
-	
-	@Value("${ords.app.id}")
-	private String appId;
-	
-	@Value("${ords.app.pwd}")
-	private String appPwd;
-	
-	@Value("${ords.app.ticketlifetime}")
-	private String ticLifeTime;
+	@Autowired
+	private AppProperties props; 
 
 	public OrdsDocumentLookupService(RestTemplateBuilder restTemplateBuilder) {
 		this.restTemplate = restTemplateBuilder
 				.build();
 	}
+
 	
 	/**
 	 * 
@@ -65,13 +58,14 @@ public class OrdsDocumentLookupService {
 	 * @param appTicket
 	 * @return
 	 */
-	private CompletableFuture<ResponseEntity<GetFileResponse>> getFilePOC(Job job, String appTicket) {
+	private CompletableFuture<ResponseEntity<GetFileResponse>> getFile(Job job, String appTicket) {
 		
 		ResponseEntity<GetFileResponse> results = null; 
 		
 		try {
 		
-			String getEndpoint = ordsEndpoint + "/getFilePoc?AppTicket=%s" + 
+			// TODO - discuss this endpoint with Bron. 
+			String getEndpoint = props.getOrdsEndpoint() + "/getFilePoc?AppTicket=%s" + 
 												"&ObjectGuid=%s" + 
 												"&TicketLifeTime=%s" + 
 												"&PutId=SCVPOC";
@@ -84,9 +78,9 @@ public class OrdsDocumentLookupService {
 				e.printStackTrace();
 			}
 			
-			getEndpoint = String.format(getEndpoint, appTicket, htmlEscapedBase64Guid, this.ticLifeTime);
+			getEndpoint = String.format(getEndpoint, appTicket, htmlEscapedBase64Guid, props.getTicLifeTime());
 			
-			logger.info("Calling ORDS getDocPOC...");
+			logger.info("Calling ORDS getFile...");
 			
 			results = restTemplate.exchange(getEndpoint, HttpMethod.GET, 
 						new HttpEntity<GetFileResponse>(createHeaders()), GetFileResponse.class);				
@@ -96,7 +90,7 @@ public class OrdsDocumentLookupService {
 			return CompletableFuture.completedFuture(results);
 
 		} catch (Exception ex) {
-			logger.error("GetDocPOC call resulted in an error. Message: " + ex.getMessage());
+			logger.error("GetFile call resulted in an error. Message: " + ex.getMessage());
 			throw ex;
 		} 
 	}
@@ -118,17 +112,18 @@ public class OrdsDocumentLookupService {
 	 * 
 	 * @return
 	 */
+	@Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 10000))
 	private CompletableFuture<ResponseEntity<InitializeResponse>> initializeNFSDocument(Job job) throws InterruptedException {
 		
 		ResponseEntity<InitializeResponse> resp = null;
 		try {
 			
 			HttpEntity<InitializeRequest> body = new HttpEntity<InitializeRequest>(
-								new InitializeRequest(appId, appPwd, ticLifeTime), createHeaders());
+								new InitializeRequest(props.getAppId(), props.getAppPwd(), props.getTicLifeTime()), createHeaders());
 			
 			logger.info("Calling ORDS initialize...");
 			
-			resp = restTemplate.exchange(ordsEndpoint + "/initialize",
+			resp = restTemplate.exchange(props.getOrdsEndpoint() + "/initialize",
 										HttpMethod.POST,
 										body,
 										InitializeResponse.class);
@@ -138,13 +133,14 @@ public class OrdsDocumentLookupService {
 			return CompletableFuture.completedFuture(resp);
 		
 		} catch (HttpStatusCodeException ex) {
-			logger.error("Initialize call resulted in an HTTPStatus code response of " + ex.getStatusText());
+			logger.error("Initialize call resulted in an HTTP Status code response of " + ex.getStatusText());
 			throw ex;
 		} 
 
 	}
 
 	@Async
+	@Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 10000))
 	public void SendOrdsGetDocumentRequests(List<Job> jobs) throws URISyntaxException {
 		
 		String appTicket = null; 
@@ -164,7 +160,7 @@ public class OrdsDocumentLookupService {
 				DispatchOrdsResponse(job); // dispatch first half of request (init). 
 				
 				try { 
-					CompletableFuture<ResponseEntity<GetFileResponse>> future2 = this.getFilePOC(job, appTicket);
+					CompletableFuture<ResponseEntity<GetFileResponse>> future2 = this.getFile(job, appTicket);
 					ResponseEntity<GetFileResponse> _resp = future2.get();
 					job.setEndGetDocTime(System.currentTimeMillis());
 					job.setFileName(_resp.getBody().getFilename());
@@ -199,6 +195,23 @@ public class OrdsDocumentLookupService {
 		
 	}
 	
+	@Async
+	@Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 10000))
+	public CompletableFuture<ResponseEntity<OrdsHealthResponse>> GetOrdsHealth() throws HttpClientErrorException {
+
+		logger.info("Calling ORDS Health...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+
+		ResponseEntity<OrdsHealthResponse> resp = null;
+
+		resp = restTemplate.exchange(props.getOrdsEndpoint() + "/health", HttpMethod.GET,
+				new HttpEntity<OrdsHealthResponse>(createHeaders()), OrdsHealthResponse.class);
+
+		logger.info("Success.");
+
+		return CompletableFuture.completedFuture(resp);
+
+	}
+	
 	/**
 	 * 
 	 * Dispatch data to front end.
@@ -222,7 +235,7 @@ public class OrdsDocumentLookupService {
 		return new HttpHeaders() {
 			private static final long serialVersionUID = -9217317753759432107L;
 			{
-				String auth = ordsUserName + ":" + ordsPassword;
+				String auth = props.getOrdsUserName() + ":" + props.getOrdsPassword();
 				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(), false);
 				String authHeader = "Basic " + new String(encodedAuth);
 				set("Authorization", authHeader);
