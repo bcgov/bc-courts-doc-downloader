@@ -17,13 +17,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -48,7 +47,6 @@ public class OrdsDocumentLookupService {
 		this.restTemplate = restTemplateBuilder
 				.build();
 	}
-
 	
 	/**
 	 * 
@@ -58,41 +56,31 @@ public class OrdsDocumentLookupService {
 	 * @param appTicket
 	 * @return
 	 */
+	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	private CompletableFuture<ResponseEntity<GetFileResponse>> getFile(Job job, String appTicket) {
-		
-		ResponseEntity<GetFileResponse> results = null; 
-		
-		try {
-		
-			// TODO - discuss this endpoint with Bron. 
-			String getEndpoint = props.getOrdsEndpoint() + "/getFilePoc?AppTicket=%s" + 
-												"&ObjectGuid=%s" + 
-												"&TicketLifeTime=%s" + 
-												"&PutId=SCVPOC";
-			
-			// The base64 document guid has to be additionally URL escaped as it's sent as a param to a RESTful ORDS operation.  
-			String htmlEscapedBase64Guid = null; 
-			try {
-				htmlEscapedBase64Guid = encodeValue(job.getDocGuid());
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			
-			getEndpoint = String.format(getEndpoint, appTicket, htmlEscapedBase64Guid, props.getTicLifeTime());
-			
-			logger.info("Calling ORDS getFile...");
-			
-			results = restTemplate.exchange(getEndpoint, HttpMethod.GET, 
-						new HttpEntity<GetFileResponse>(createHeaders()), GetFileResponse.class);				
-	    
-			logger.info("Success.");
-			
-			return CompletableFuture.completedFuture(results);
 
-		} catch (Exception ex) {
-			logger.error("GetFile call resulted in an error. Message: " + ex.getMessage());
-			throw ex;
-		} 
+		logger.info("Calling ORDS getFile...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+
+		// TODO - discuss this endpoint with Bron.
+		String getEndpoint = props.getOrdsEndpoint() + "/getFilePoc?AppTicket=%s" + "&ObjectGuid=%s"
+				+ "&TicketLifeTime=%s" + "&PutId=SCVPOC";
+
+		// The base64 document guid has to be additionally URL escaped as it's sent as a
+		// param to a RESTful ORDS operation.
+		String htmlEscapedBase64Guid = null;
+		try {
+			htmlEscapedBase64Guid = encodeValue(job.getDocGuid());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+
+		getEndpoint = String.format(getEndpoint, appTicket, htmlEscapedBase64Guid, props.getTicLifeTime());
+
+		ResponseEntity<GetFileResponse> results = restTemplate.exchange(getEndpoint, HttpMethod.GET,
+				new HttpEntity<GetFileResponse>(createHeaders()), GetFileResponse.class);
+
+		return CompletableFuture.completedFuture(results);
+
 	}
 	
 	/**
@@ -112,35 +100,23 @@ public class OrdsDocumentLookupService {
 	 * 
 	 * @return
 	 */
-	@Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 10000))
-	private CompletableFuture<ResponseEntity<InitializeResponse>> initializeNFSDocument(Job job) throws InterruptedException {
-		
-		ResponseEntity<InitializeResponse> resp = null;
-		try {
-			
-			HttpEntity<InitializeRequest> body = new HttpEntity<InitializeRequest>(
-								new InitializeRequest(props.getAppId(), props.getAppPwd(), props.getTicLifeTime()), createHeaders());
-			
-			logger.info("Calling ORDS initialize...");
-			
-			resp = restTemplate.exchange(props.getOrdsEndpoint() + "/initialize",
-										HttpMethod.POST,
-										body,
-										InitializeResponse.class);
-			
-			logger.info("Success.");
-			
-			return CompletableFuture.completedFuture(resp);
-		
-		} catch (HttpStatusCodeException ex) {
-			logger.error("Initialize call resulted in an HTTP Status code response of " + ex.getStatusText());
-			throw ex;
-		} 
+	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
+	private CompletableFuture<ResponseEntity<InitializeResponse>> initializeNFSDocument(Job job)
+			throws InterruptedException {
+
+		logger.info("Calling ORDS initialize...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+
+		HttpEntity<InitializeRequest> body = new HttpEntity<InitializeRequest>(
+				new InitializeRequest(props.getAppId(), props.getAppPwd(), props.getTicLifeTime()), createHeaders());
+
+		ResponseEntity<InitializeResponse> resp = restTemplate.exchange(props.getOrdsEndpoint() + "/initialize",
+				HttpMethod.POST, body, InitializeResponse.class);
+
+		return CompletableFuture.completedFuture(resp);
 
 	}
 
 	@Async
-	@Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 10000))
 	public void SendOrdsGetDocumentRequests(List<Job> jobs) throws URISyntaxException {
 		
 		String appTicket = null; 
@@ -196,7 +172,8 @@ public class OrdsDocumentLookupService {
 	}
 	
 	@Async
-	@Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 10000))
+	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", 
+		backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<ResponseEntity<OrdsHealthResponse>> GetOrdsHealth() throws HttpClientErrorException {
 
 		logger.info("Calling ORDS Health...retry count " + RetrySynchronizationManager.getContext().getRetryCount());

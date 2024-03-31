@@ -10,6 +10,12 @@ public class AppProperties {
 
 	@Value("${application.name}")
 	private String appName;
+	
+	@Value("${application.net.max.retries}")
+	private int retries;
+	
+	@Value("${application.net.delay}")
+	private String delay;
 
 	@Value("${ords.endpoint}")
 	private String ordsEndpoint;
@@ -35,6 +41,22 @@ public class AppProperties {
 
 	public void setAppName(String appName) {
 		this.appName = appName;
+	}
+
+	public int getRetries() {
+		return retries;
+	}
+
+	public void setRetries(int retries) {
+		this.retries = retries;
+	}
+
+	public String getDelay() {
+		return delay;
+	}
+
+	public void setDelay(String delay) {
+		this.delay = delay;
 	}
 
 	public String getOrdsEndpoint() {
