@@ -61,9 +61,9 @@ public class OrdsDocumentLookupService {
 
 		logger.info("Calling ORDS getFile...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
 
-		// TODO - discuss this endpoint with Bron.
+		// TODO - discuss this endpoint with Bron - what should PutID be?
 		String getEndpoint = props.getOrdsEndpoint() + "/getFilePoc?AppTicket=%s" + "&ObjectGuid=%s"
-				+ "&TicketLifeTime=%s" + "&PutId=SCVPOC";
+				+ "&TicketLifeTime=%s" + "&PutId=" + props.getAppId();
 
 		// The base64 document guid has to be additionally URL escaped as it's sent as a
 		// param to a RESTful ORDS operation.
