@@ -11,6 +11,8 @@ import ca.bc.gov.ag.courts.api.model.FiletransferResponse;
 @RestController
 public class DocumentTransferController implements FetchApi {
 	
+	//TODO - update operation set as per arc docs. 
+	
 	@Override
 	public ResponseEntity<FiletransferResponse> fetchPost(FiletransferRequest req) {
 		//TODO 
