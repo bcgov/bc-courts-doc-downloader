@@ -26,6 +26,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/filetransfer_response"
+  /status:
+   get:
+      summary: Document fetch status endpoint 
+      tags: 
+        - File Transfer
+      description: File Transfer Status Request
+      responses:
+        '200':
+          description: 'Status returned successfully'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/filetransferstatus_response"
   /ping:
    get:
       summary: Back end connectivity
@@ -39,6 +52,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ping_response"
+  /test:
+   get: 
+      summary: A MS Graph Test Operation. To be removed for prod. 
+      tags: 
+        - Test
+      description: A MS Graph Test Operation. To be removed for prod
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/test_response"
 components:
   schemas:
     filetransfer_request:
@@ -56,6 +82,40 @@ components:
         acknowledge:
           type: boolean
         detail: 
-          type: string  
+          type: string
+    filetransferstatus_response:
+      type: object
+      properties:
+        percentTransfered:
+          type: integer
+        fileRequestedDtm: 
+          type: string
+          description: Creation date and time + UTC Offset 
+          example: "2013-09-15T05:53:00-08:00"
+        fileDeliveredDtm: 
+          type: string
+          description: Delivery date and time + UTC Offset 
+          example: "2013-09-15T05:54:00-08:00"
+        fileSize:
+          type: integer
+          format: int64
+          description: File Size in bytes  
+          example: "1223440"
+        fileName: 
+          type: string
+          description: File name to be delivered 
+        filePath: 
+          type: string
+          description: Expected file delivery path
+        mime: 
+          type: string
+          description: File mime type  
     ping_response:
       type: string
+    test_response:
+      type: object
+      properties:
+        result:
+          type: string
+        error: 
+          type: string  
