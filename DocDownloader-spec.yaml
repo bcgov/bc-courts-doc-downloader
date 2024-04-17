@@ -41,10 +41,10 @@ paths:
                 $ref: "#/components/schemas/filetransferstatus_response"
   /ping:
    get:
-      summary: Back end connectivity
+      summary: Back end connectivity test
       tags: 
         - Utilities
-      description: Back end connectivity
+      description: Back end connectivity test
       responses:
         '200':
           description: Success
