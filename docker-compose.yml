@@ -1,0 +1,30 @@
+version: "3.3"
+
+services:
+  #############################################################################################
+  ###                           Doc Downloader api backend app                              ###
+  #############################################################################################
+  docdownloader-api:
+    container_name: docdownloader-api
+    image: docdownloaderapi
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile.docDownloader-api
+      args:
+        - SERVICE_NAME=DocDownloaderAPI
+        - SKIP_TESTS=true
+    ports:
+      - "8080:8080"
+    environment:
+      - ORDS_ENDPOINT=${ORDS_ENDPOINT}
+      - ORDS_AUTH_PASSWORD=${ORDS_AUTH_PASSWORD}
+      - ORDS_AUTH_USER=${ORDS_AUTH_USER}
+      - ORDS_APP_ID=${ORDS_APP_ID}
+      - ORDS_APP_PWD=${ORDS_APP_PWD}
+      - ORDS_APP_TICKETLIFETIME=${ORDS_APP_TICKETLIFETIME}
+    networks:
+      - docDownloader
+
+networks:
+  docDownloader:
+    driver: bridge
