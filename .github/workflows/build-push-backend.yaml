@@ -78,7 +78,7 @@ jobs:
           
           # Repackage Helm Chart      
 
-          cd por-gitops
+          cd docdownloader-gitops
 
           helm dependency build
           
