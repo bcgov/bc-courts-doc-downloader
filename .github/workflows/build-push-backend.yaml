@@ -8,7 +8,7 @@ on:
       - ".github/workflows/build-push-backend.yaml"
   workflow_dispatch:
 env:
-  IMAGE_NAME: docdownloaderapi
+  IMAGE_NAME: docdownloader-api
   WORKING_DIRECTORY: ./
   TAG_VERSION: dev
 jobs:
@@ -36,12 +36,12 @@ jobs:
         working-directory: ${{env.WORKING_DIRECTORY}}
         run: |      
           docker compose build docdownloader-api
-          docker tag docdownloader-api artifacts.developer.gov.bc.ca/aaaa-docdownloader-api/${{ env.IMAGE_NAME }}:${{ env.TAG_VERSION }}
+          docker tag docdownloader-api artifacts.developer.gov.bc.ca/sdc2-docdownloader-api/${{ env.IMAGE_NAME }}:${{ env.TAG_VERSION }}
           
       - name: Docker Push to Artifactory
         id: publish
         run: |
-          docker push artifacts.developer.gov.bc.ca/aaaa-docdownloader-api/${{ env.IMAGE_NAME }}:${{ env.TAG_VERSION }}
+          docker push artifacts.developer.gov.bc.ca/sdc2-docdownloader-api/${{ env.IMAGE_NAME }}:${{ env.TAG_VERSION }}
       
       - name: Checkout ArgoCD Repo
         id: gitops
