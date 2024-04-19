@@ -8,7 +8,7 @@ on:
       - ".github/workflows/build-push-backend.yaml"
   workflow_dispatch:
 env:
-  IMAGE_NAME: docdownloaderapi
+  IMAGE_NAME: docdownloader-api
   WORKING_DIRECTORY: ./
   TAG_VERSION: dev
 jobs:
