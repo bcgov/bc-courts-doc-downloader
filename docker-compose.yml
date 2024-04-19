@@ -6,7 +6,7 @@ services:
   #############################################################################################
   docdownloader-api:
     container_name: docdownloader-api
-    image: docdownloaderapi
+    image: docdownloader-api
     build:
       context: ./src/backend
       dockerfile: Dockerfile.docDownloader-api
