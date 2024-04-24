@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "Filename", "MimeType" })
+@JsonPropertyOrder({ "ilename", "MimeType" })
 public class GetFileResponse {
 
 	@JsonProperty("Filename")

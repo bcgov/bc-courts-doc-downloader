@@ -14,7 +14,8 @@ public class StatusController implements StatusApi {
 	public ResponseEntity<FiletransferstatusResponse> statusGet() {
 		
 		// TODO - This will come from Reddis
-		// TODO - Needs input params defined. 
+		// TODO - Needs input params defined.
+		// TODO - Needs to return Job object. 
 		FiletransferstatusResponse resp = new FiletransferstatusResponse();
 		resp.setPercentTransfered(75);
 		resp.setFileRequestedDtm("2013-09-15T05:53:00-08:00");

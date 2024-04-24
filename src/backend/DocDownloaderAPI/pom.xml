@@ -18,6 +18,7 @@
 		<java.version>17</java.version>
 		<openapi-version>7.4.0</openapi-version>
 		<default-package>ca.bc.gov.ag.courts</default-package>
+		<httpclient-version>4.5.14</httpclient-version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -41,6 +42,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+        </dependency>
 			
 		<dependency>
 		    <groupId>org.springframework.retry</groupId>
@@ -51,6 +57,11 @@
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-aspects</artifactId>
 		</dependency>
+		
+		 <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
 		
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
@@ -114,7 +125,18 @@
 		    <groupId>com.fasterxml.jackson.datatype</groupId>
 		    <artifactId>jackson-datatype-joda</artifactId>
 		</dependency>
-
+		
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpclient</artifactId>
+		    <version>${httpclient-version}</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpcore</artifactId>
+		</dependency>
 				
 	</dependencies>
 

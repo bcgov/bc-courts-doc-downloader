@@ -1,100 +1,230 @@
+
 package ca.bc.gov.ag.courts.model;
 
+
+import java.io.Serializable;
+
+import org.springframework.data.redis.core.RedisHash;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import lombok.RequiredArgsConstructor;
+
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({ "id", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout", "checksum",
+		"graphSessionId", "error", "lastErrorMessage", "startDelivery", "endDelivery", "percentageComplete", "fileName",
+		"mimeType" })
+@RedisHash("Job")
+@RequiredArgsConstructor
 /**
- * Maintains attributes specific to each document retrieval job (thread)
  * 
+ * This class represents a document transfer job. It contains all the aspects of the jobs current state and 
+ * is stored in the Redis Cache client during the progress from the initial document request to transfer complete.
+ * 
+ * Note: Guid attribute is a base64 representation of the actual Object Store guid since this string may contain illegal JSON characters. 
+ *  
  * @author 176899
  *
  */
-public class Job {
+public class Job implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6588653204556249341L;
 	
-	private String docGuid; 
-	private String label;
-	private String threadId;
-	private boolean error; 
-	private String errorMessage; 
+	@JsonProperty("id")
+	private String id;
+	@JsonProperty("guid")
+	private String guid;
+	@JsonProperty("applicationId")
+	private String applicationId;
+	@JsonProperty("putId")
+	private String putId;
+	@JsonProperty("ordsTimeout")
+	private Boolean ordsTimeout;
+	@JsonProperty("graphTimeout")
+	private Boolean graphTimeout;
+	@JsonProperty("checksum")
+	private String checksum;
+	@JsonProperty("graphSessionId")
+	private String graphSessionId;
+	@JsonProperty("error")
+	private Boolean error;
+	@JsonProperty("lastErrorMessage")
+	private String lastErrorMessage;
+	@JsonProperty("startDeliveryDtm")
+	private String startDeliveryDtm;
+	@JsonProperty("endDeliveryDtm")
+	private String endDeliveryDtm;
+	@JsonProperty("percentageComplete")
+	private Integer percentageComplete;
+	@JsonProperty("fileName")
+	private String fileName;
+	@JsonProperty("mimeType")
+	private String mimeType;
 	
-	private long starttime; 
-	private long endInitTime;
-	private long endGetDocTime;  
-	private String percentageComplete = "0";
-	
-	private String fileName; 
-	private String mimeType; 
-	
+	@JsonProperty("id")
+	public String getId() {
+		return id;
+	}
+
+	@JsonProperty("id")
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	@JsonProperty("guid")
+	public String getGuid() {
+		return guid;
+	}
+
+	@JsonProperty("guid")
+	public void setGuid(String guid) {
+		this.guid = guid;
+	}
+
+	@JsonProperty("applicationId")
+	public String getApplicationId() {
+		return applicationId;
+	}
+
+	@JsonProperty("applicationId")
+	public void setApplicationId(String applicationId) {
+		this.applicationId = applicationId;
+	}
+
+	@JsonProperty("putId")
+	public String getPutId() {
+		return putId;
+	}
+
+	@JsonProperty("putId")
+	public void setPutId(String putId) {
+		this.putId = putId;
+	}
+
+	@JsonProperty("ordsTimeout")
+	public Boolean getOrdsTimeout() {
+		return ordsTimeout;
+	}
+
+	@JsonProperty("ordsTimeout")
+	public void setOrdsTimeout(Boolean ordsTimeout) {
+		this.ordsTimeout = ordsTimeout;
+	}
+
+	@JsonProperty("graphTimeout")
+	public Boolean getGraphTimeout() {
+		return graphTimeout;
+	}
+
+	@JsonProperty("graphTimeout")
+	public void setGraphTimeout(Boolean graphTimeout) {
+		this.graphTimeout = graphTimeout;
+	}
+
+	@JsonProperty("checksum")
+	public String getChecksum() {
+		return checksum;
+	}
+
+	@JsonProperty("checksum")
+	public void setChecksum(String checksum) {
+		this.checksum = checksum;
+	}
+
+	@JsonProperty("graphSessionId")
+	public String getGraphSessionId() {
+		return graphSessionId;
+	}
+
+	@JsonProperty("graphSessionId")
+	public void setGraphSessionId(String graphSessionId) {
+		this.graphSessionId = graphSessionId;
+	}
+
+	@JsonProperty("error")
+	public Boolean getError() {
+		return error;
+	}
+
+	@JsonProperty("error")
+	public void setError(Boolean error) {
+		this.error = error;
+	}
+
+	@JsonProperty("lastErrorMessage")
+	public String getLastErrorMessage() {
+		return lastErrorMessage;
+	}
+
+	@JsonProperty("lastErrorMessage")
+	public void setLastErrorMessage(String lastErrorMessage) {
+		this.lastErrorMessage = lastErrorMessage;
+	}
+
+	@JsonProperty("startDelivery")
+	public String getStartDeliveryDtm() {
+		return startDeliveryDtm;
+	}
+
+	@JsonProperty("startDeliveryDtm")
+	public void setStartDelivery(String startDeliveryDtm) {
+		this.startDeliveryDtm = startDeliveryDtm;
+	}
+
+	@JsonProperty("endDeliveryDtm")
+	public String getEndDeliveryDtm() {
+		return endDeliveryDtm;
+	}
+
+	@JsonProperty("endDelivery")
+	public void setEndDelivery(String endDeliveryDtm) {
+		this.endDeliveryDtm = endDeliveryDtm;
+	}
+
+	@JsonProperty("percentageComplete")
+	public Integer getPercentageComplete() {
+		return percentageComplete;
+	}
+
+	@JsonProperty("percentageComplete")
+	public void setPercentageComplete(Integer percentageComplete) {
+		this.percentageComplete = percentageComplete;
+	}
+
+	@JsonProperty("fileName")
 	public String getFileName() {
 		return fileName;
 	}
+
+	@JsonProperty("fileName")
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
+
+	@JsonProperty("mimeType")
 	public String getMimeType() {
 		return mimeType;
 	}
+
+	@JsonProperty("mimeType")
 	public void setMimeType(String mimeType) {
 		this.mimeType = mimeType;
 	}
-	public String getDocGuid() {
-		return docGuid;
+
+	@Override
+	public String toString() {
+		return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId + ", putId=" + putId
+				+ ", ordsTimeout=" + ordsTimeout + ", graphTimeout=" + graphTimeout + ", checksum=" + checksum
+				+ ", graphSessionId=" + graphSessionId + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
+				+ ", startDeliveryDtm=" + startDeliveryDtm + ", endDeliveryDtm=" + endDeliveryDtm
+				+ ", percentageComplete=" + percentageComplete + ", fileName=" + fileName + ", mimeType=" + mimeType
+				+ "]";
 	}
-	public void setDocGuid(String docGuid) {
-		this.docGuid = docGuid;
-	}
-	public String getLabel() {
-		return label;
-	}
-	public void setLabel(String label) {
-		this.label = label;
-	}
-	public String getThreadId() {
-		return threadId;
-	}
-	public void setThreadId(String threadId) {
-		this.threadId = threadId;
-	}
-	public boolean isError() {
-		return error;
-	}
-	public void setError(boolean error) {
-		this.error = error;
-	}
-	public long getStarttime() {
-		return starttime;
-	}
-	public void setStarttime(long starttime) {
-		this.starttime = starttime;
-	}
-	public String getDurations() {
-		String resp = "";
-		
-		if ( this.starttime > 0 ) { 
-			if ( this.endInitTime > 0 ) {
-				resp = resp + Long.toString(this.endInitTime - this.starttime); 
-			}
-			if ( this.endGetDocTime > 0 ) {
-				resp = resp + " : " + Long.toString(this.endGetDocTime - this.starttime) + " ms";
-			} else {
-				resp = resp + " ms";
-			}
-		}
-		return resp; 
-	}
-	public void setEndInitTime(long endInitTime) {
-		this.endInitTime = endInitTime;
-	}
-	public void setEndGetDocTime(long endGetDocTime) {
-		this.endGetDocTime = endGetDocTime;
-	}
-	public String getPercentageComplete() {
-		return percentageComplete;
-	}
-	public void setPercentageComplete(String percentageComplete) {
-		this.percentageComplete = percentageComplete;
-	}
-	public void setErrorMessage(String msg) {
-		this.errorMessage = msg; 
-	}
-	public String getErrorMessage() {
-		return errorMessage;
-	}
+
 }
