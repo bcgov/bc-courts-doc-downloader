@@ -22,6 +22,7 @@
 			<id>all</id>
 			<modules>
 				<module>DocDownloaderAPI</module>
+				<module>DocDownloaderRedisCache</module>
 			</modules>
 		</profile>
 		<profile>
