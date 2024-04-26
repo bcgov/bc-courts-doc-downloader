@@ -1,0 +1,298 @@
+{
+	"info": {
+		"_postman_id": "630eae9d-a132-47f6-92eb-99463d9f1797",
+		"name": "SCV Download Function Redis Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14174366"
+	},
+	"item": [
+		{
+			"name": "Get Jobs",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "client",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/jobs",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"jobs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Job",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "client",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/jobs/0990993",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"jobs",
+						"0990993"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Job",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "client",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/job/0990993",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"job",
+						"0990993"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Job Exception",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/job/0990994",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"job",
+						"0990994"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Job",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "client",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"0990993\",\r\n  \"guid\":\"d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyO\",\r\n  \"applicationId\": \"CeisCso\",\r\n  \"putId\":\"SCV\", \r\n  \"ordsTimeout\": false,\r\n  \"graphTimeout\": true,  \r\n  \"checksum\":\"56112BF23\", \r\n  \"graphSessionId\":\"78900011\",\r\n  \"error\": false, \r\n  \"lastErrorMessage\": \"wow\", \r\n  \"startDelivery\": \"2024-01-19T19:00-07:00\", \r\n  \"endDelivery\": null,\r\n  \"percentageComplete\": 65,\r\n  \"fileName\":\"TEST_3M.pdf\", \r\n  \"mimeType\":\"application/pdf\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/job",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"job"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Job",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "client",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"0990993\",\r\n  \"guid\":\"d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyO\",\r\n  \"applicationId\": \"CeisCso\",\r\n  \"putId\":\"SCV\", \r\n  \"ordsTimeout\": false,\r\n  \"graphTimeout\": true,  \r\n  \"checksum\":\"56112BF23\", \r\n  \"graphSessionId\":\"78900011\",\r\n  \"error\": false, \r\n  \"lastErrorMessage\": \"wow\", \r\n  \"startDelivery\": \"2024-01-19T19:00-07:00\", \r\n  \"endDelivery\": null,\r\n  \"percentageComplete\": 65,\r\n  \"fileName\":\"TEST_3M.pdf\", \r\n  \"mimeType\":\"application/pdf\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/job",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"job"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Job Exception",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "client",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"0990995\",\r\n  \"guid\":\"d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyO\",\r\n  \"applicationId\": \"CeisCso\",\r\n  \"putId\":\"SCV\", \r\n  \"ordsTimeout\": false,\r\n  \"graphTimeout\": false,  \r\n  \"checksum\":\"56112BF23\", \r\n  \"graphSessionId\":\"78900011\",\r\n  \"error\": false, \r\n  \"lastErrorMessage\": \"wow\", \r\n  \"startDelivery\": \"2024-01-19T19:00-07:00\", \r\n  \"endDelivery\": null,\r\n  \"percentageComplete\": 65,\r\n  \"fileName\":\"TEST_3M.pdf\", \r\n  \"mimeType\":\"application/pdf\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/job",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"job"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Job Bad startDelivery date Exception",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "client",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"0990993\",\r\n  \"guid\":\"d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyO\",\r\n  \"applicationId\": \"CeisCso\",\r\n  \"putId\":\"SCV\", \r\n  \"ordsTimeout\": false,\r\n  \"graphTimeout\": false,  \r\n  \"checksum\":\"56112BF23\", \r\n  \"graphSessionId\":\"78900011\",\r\n  \"error\": false, \r\n  \"lastErrorMessage\": \"wow\", \r\n  \"startDelivery\": \"2024-01-19T19:00-7:00\", \r\n  \"endDelivery\": null,\r\n  \"percentageComplete\": 65,\r\n  \"fileName\":\"TEST_3M.pdf\", \r\n  \"mimeType\":\"application/pdf\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/job",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"job"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

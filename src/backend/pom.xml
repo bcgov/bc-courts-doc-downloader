@@ -19,7 +19,7 @@
 
 	<profiles>
 		<profile>
-			<id>all</id>
+			<id>unittest</id>
 			<modules>
 				<module>DocDownloaderAPI</module>
 				<module>DocDownloaderRedisCache</module>
@@ -30,7 +30,13 @@
 			<modules>
 				<module>DocDownloaderAPI</module>
 			</modules>
-		</profile>		
+		</profile>
+		<profile>
+			<id>redisCache</id>
+			<modules>
+				<module>DocDownloaderRedisCache</module>
+			</modules>
+		</profile>
 	</profiles>
 </project>
 

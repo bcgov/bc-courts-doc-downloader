@@ -18,12 +18,21 @@
         <cglib.version>3.2.4</cglib.version>
         <jedis.version>5.1.2</jedis.version>
         <joda-time.version>2.12.7</joda-time.version>
+        <splunk-library-javalogging.version>1.11.8</splunk-library-javalogging.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -66,6 +75,27 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>splunk</id>
+            <repositories>
+                <repository>
+                    <id>splunk-artifactory</id>
+                    <name>Splunk Releases</name>
+                    <url>https://splunk.jfrog.io/splunk/ext-releases-local</url>
+                </repository>
+            </repositories>
+
+            <dependencies>
+                <dependency>
+                    <groupId>com.splunk.logging</groupId>
+                    <artifactId>splunk-library-javalogging</artifactId>
+                    <version>${splunk-library-javalogging.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>

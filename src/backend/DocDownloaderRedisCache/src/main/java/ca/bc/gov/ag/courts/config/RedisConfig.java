@@ -18,7 +18,7 @@ import org.springframework.data.redis.serializer.GenericToStringSerializer;
 @Configuration
 @EnableRedisRepositories(basePackages = "ca.bc.gov.ag.courts.repo")
 @PropertySource("classpath:application.properties")
-@Profile("prod")
+@Profile({"prod", "dev", "splunk"})
 public class RedisConfig {
 
     @Bean
