@@ -1,9 +1,11 @@
 package ca.bc.gov.ag.courts;
 
+import ca.bc.gov.ag.courts.config.SecurityConfig;
 import ca.bc.gov.ag.courts.controller.JobController;
 import ca.bc.gov.ag.courts.model.Job;
 import ca.bc.gov.ag.courts.queue.MessagePublisher;
 import ca.bc.gov.ag.courts.repo.JobRepository;
+import ca.bc.gov.ag.courts.util.JobValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,9 +18,12 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 
 @SpringBootTest
-@Profile("test")
+@Profile("unittest")
 class JobControllerTests {
 
     @MockBean
@@ -44,6 +49,18 @@ class JobControllerTests {
     private JobRepository jobRepository;
 
     @MockBean
+    private SecurityConfig securityConfig;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
+
+    @MockBean
+    private SecurityFilterChain securityFilterChain;
+
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
+    @MockBean
     private JobController jobController;
 
     @Test
@@ -53,6 +70,18 @@ class JobControllerTests {
         var aJob = jobController.postJob(job);
         Assertions.assertNotNull(aJob, "Job is null");
         Assertions.assertEquals(job.toString(), aJob, "Post Job not the same.");
+    }
+
+    @Test
+    public void testDeleteJobs() throws Exception {
+        Mockito.when(jobController.deleteJob(Mockito.anyString())).thenReturn(Mockito.any()); // replace with your actual deleteJob endpoint
+        Assertions.assertDoesNotThrow(() -> jobController.deleteJob("123"));
+    }
+
+    @Test
+    public void testJobValidator() {
+        Job job = getJob();
+        Assertions.assertDoesNotThrow(() -> JobValidator.validateJobDates(job));
     }
 
     private Job getJob() {
