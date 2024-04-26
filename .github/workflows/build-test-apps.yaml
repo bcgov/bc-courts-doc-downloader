@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ACTION_DEBUG: true
+      REDIS_PROFILE: unittest
 
     steps:   
       
