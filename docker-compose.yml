@@ -16,12 +16,44 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ORDS_ENDPOINT=${ORDS_ENDPOINT}
-      - ORDS_AUTH_PASSWORD=${ORDS_AUTH_PASSWORD}
-      - ORDS_AUTH_USER=${ORDS_AUTH_USER}
-      - ORDS_APP_ID=${ORDS_APP_ID}
-      - ORDS_APP_PWD=${ORDS_APP_PWD}
-      - ORDS_APP_TICKETLIFETIME=${ORDS_APP_TICKETLIFETIME}
+      - APPLICATION_DEBUG_LEVEL=${APPLICATION_DEBUG_LEVEL}
+      - APPLICATION_PASSWORD=${APPLICATION_PASSWORD}
+      - APPLICATION_USERNAME=${APPLICATION_USERNAME}
+      - ORDS_DATABASE_ID=${ORDS_DATABASE_ID}
+      - ORDS_APPLICATION_ID=${ORDS_APPLICATION_ID}
+      - ORDS_PUT_ID=${ORDS_PUT_ID}
+      - ORDS_PASSWORD=${ORDS_PASSWORD}
+      - ORDS_SSG_BASE_URL= ${ORDS_SSG_BASE_URL}
+      - ORDS_SSG_USERNAME=${ORDS_SSG_USERNAME}
+      - ORDS_SSG_PASSWORD=${ORDS_SSG_PASSWORD}
+      - ORDS_TICKETLIFETIME=${ORDS_TICKETLIFETIME}
+      - ORDS_USERNAME=${ORDS_USERNAME}
+      - ORDS_SERVER=${ORDS_SERVER}
+    networks:
+      - docDownloader
+
+  #############################################################################################
+  ###                           Doc Downloader Redis Cache Client backend app               ###
+  #############################################################################################
+  docdownloader-redis-cache:
+    container_name: docdownloader-redis-cache-client
+    image: docdownloader-redis-cache
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile.docDownloader-redis-cache
+      args:
+        - SERVICE_NAME=DocDownloaderRedisCache
+        - SKIP_TESTS=true
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_CACHE_AUTH_CLIENT=${REDIS_CACHE_AUTH_CLIENT}
+      - REDIS_CACHE_AUTH_SECRET=${REDIS_CACHE_AUTH_SECRET}
+      - SPLUNK_URL=${SPLUNK_URL}
+      - SPLUNK_TOKEN=${SPLUNK_TOKEN}
+      - REDIS_PROFILE=${REDIS_PROFILE}
     networks:
       - docDownloader
 
