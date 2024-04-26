@@ -73,7 +73,7 @@ class JobControllerTests {
     }
 
     @Test
-    public void testDeleteJobs() throws Exception {
+    public void testDeleteJobs() {
         Mockito.when(jobController.deleteJob(Mockito.anyString())).thenReturn(Mockito.any()); // replace with your actual deleteJob endpoint
         Assertions.assertDoesNotThrow(() -> jobController.deleteJob("123"));
     }
