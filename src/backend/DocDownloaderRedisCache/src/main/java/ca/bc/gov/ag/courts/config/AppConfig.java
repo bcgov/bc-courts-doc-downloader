@@ -10,10 +10,10 @@ import org.springframework.core.io.ClassPathResource;
 public class AppConfig {
 
     @Bean
-    @Profile("test")
+    @Profile("unittest")
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurerTest() {
         PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
-        configurer.setLocation(new ClassPathResource("application-test.properties"));
+        configurer.setLocation(new ClassPathResource("application-unittest.properties"));
         return configurer;
     }
 
