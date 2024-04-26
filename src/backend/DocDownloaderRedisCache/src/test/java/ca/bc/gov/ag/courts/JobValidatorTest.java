@@ -26,4 +26,20 @@ public class JobValidatorTest {
 
         assertThrows(IllegalArgumentException.class, () -> JobValidator.validateJobDates(job));
     }
+
+    @Test
+    public void testValidateJobDatesWithInvalidDateOffset() {
+        Job job = new Job();
+        job.setStartDelivery("2024-01-19T19:00+7:00");
+
+        assertThrows(IllegalArgumentException.class, () -> JobValidator.validateJobDates(job));
+    }
+
+    @Test
+    public void testValidateJobDatesWithInvalidDateOffset2() {
+        Job job = new Job();
+        job.setStartDelivery("2024-01-19T19:00:07");
+
+        assertThrows(IllegalArgumentException.class, () -> JobValidator.validateJobDates(job));
+    }
 }

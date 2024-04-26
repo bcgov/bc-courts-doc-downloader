@@ -159,12 +159,12 @@ public class Job implements Serializable {
         return startDelivery;
     }
 
-    @JsonProperty("startDeliveryDtm")
+    @JsonProperty("startDelivery")
     public void setStartDelivery(String startDeliveryDtm) {
         this.startDelivery = startDeliveryDtm;
     }
 
-    @JsonProperty("endDeliveryDtm")
+    @JsonProperty("endDelivery")
     public String getEndDelivery() {
         return endDelivery;
     }
@@ -209,7 +209,7 @@ public class Job implements Serializable {
         return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId + ", putId=" + putId
                 + ", ordsTimeout=" + ordsTimeout + ", graphTimeout=" + graphTimeout + ", checksum=" + checksum
                 + ", graphSessionId=" + graphSessionId + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
-                + ", startDeliveryDtm=" + startDelivery + ", endDeliveryDtm=" + endDelivery
+                + ", startDelivery=" + startDelivery + ", endDelivery=" + endDelivery
                 + ", percentageComplete=" + percentageComplete + ", fileName=" + fileName + ", mimeType=" + mimeType
                 + "]";
     }

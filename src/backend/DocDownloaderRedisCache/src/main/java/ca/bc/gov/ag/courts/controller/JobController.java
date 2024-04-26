@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +37,7 @@ public class JobController {
 
     }
 
-    @GetMapping(path = "/jobs/{id}", produces = "application/json")
+    @GetMapping(path = "/jobs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Optional<Job>> getJobById(@PathVariable String id) {
 
         logger.info("get Job for id " + id + " called");
@@ -44,7 +45,7 @@ public class JobController {
         return new ResponseEntity<Optional<Job>>(repo.findById(id), HttpStatus.OK);
     }
 
-    @PostMapping(path = "/job", consumes = "application/json", produces = "application/json")
+    @PostMapping(path = "/job", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public String postJob(@RequestBody Job job) {
 
         logger.info("Add Job called. Job being added to the repo: " + job.toString());
@@ -59,7 +60,7 @@ public class JobController {
         return "New job added";
     }
 
-    @PutMapping(path = "/job", consumes = "application/json", produces = "application/json")
+    @PutMapping(path = "/job", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public String updateJob(@RequestBody Job job) {
 
         logger.info("Update Job called. Job being updated is : " + job.toString());
@@ -73,7 +74,7 @@ public class JobController {
         return "Job updated";
     }
 
-    @DeleteMapping(path = "/job/{id}", produces = "application/json")
+    @DeleteMapping(path = "/job/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String deleteJob(@PathVariable String id) {
 
         logger.info("Delete Job called. Job being deleted is : " + id);
