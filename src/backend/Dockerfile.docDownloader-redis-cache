@@ -9,7 +9,7 @@ ARG SKIP_TESTS=false
 COPY . .
 
 RUN mvn -B clean install \
-        -P api \
+        -P redisCache \
         -Dmaven.test.skip=${SKIP_TESTS}
 
 #############################################################################################

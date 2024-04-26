@@ -19,7 +19,7 @@
 
 	<profiles>
 		<profile>
-			<id>all</id>
+			<id>unittest</id>
 			<modules>
 				<module>DocDownloaderAPI</module>
 				<module>DocDownloaderRedisCache</module>
