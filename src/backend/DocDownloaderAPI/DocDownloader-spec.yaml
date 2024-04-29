@@ -52,7 +52,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ping_response"
-  /test:
+  /msgtest:
    get: 
       summary: A MS Graph Test Operation. To be removed for prod. 
       tags: 
@@ -65,6 +65,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/test_response"
+  /ordstest:
+   get: 
+      summary: ORDS put file Test Operation. To be removed for prod. 
+      tags: 
+        - Test
+      description: ORDS put file Test Operation. To be removed for prod
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/filetransfer_request"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ordsPush_response"               
 components:
   schemas:
     filetransfer_request:
@@ -109,7 +127,14 @@ components:
           description: Expected file delivery path
         mime: 
           type: string
-          description: File mime type  
+          description: File mime type
+    ordsPush_response:
+      type: object
+      properties:
+        filename:
+          type: string
+        mimetype: 
+          type: string
     ping_response:
       type: string
     test_response:

@@ -5,30 +5,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "Filename", "MimeType" })
+@JsonPropertyOrder({ "filename", "mimeType" })
 public class GetFileResponse {
 
-	@JsonProperty("Filename")
+	@JsonProperty("filename")
 	private String filename;
-	@JsonProperty("MimeType")
+	@JsonProperty("mimeType")
 	private String mimeType;
 
-	@JsonProperty("Filename")
+	@JsonProperty("filename")
 	public String getFilename() {
 		return filename;
 	}
 
-	@JsonProperty("Filename")
+	@JsonProperty("filename")
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
 
-	@JsonProperty("MimeType")
+	@JsonProperty("mimeType")
 	public String getMimeType() {
 		return mimeType;
 	}
 
-	@JsonProperty("MimeType")
+	@JsonProperty("mimeType")
 	public void setMimeType(String mimeType) {
 		this.mimeType = mimeType;
 	}

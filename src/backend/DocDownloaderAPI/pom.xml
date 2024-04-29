@@ -18,8 +18,16 @@
 		<java.version>17</java.version>
 		<openapi-version>7.4.0</openapi-version>
 		<default-package>ca.bc.gov.ag.courts</default-package>
+		<httpclient-version>4.5.14</httpclient-version>
+		<javax-annotation-version>1.3.2</javax-annotation-version>
+		<validation-api-version>2.0.1.Final</validation-api-version>
+		<jackson-databind-nullable-version>0.2.6</jackson-databind-nullable-version>
+		<swagger-core-version>2.2.20</swagger-core-version>
+		<javax.servlet-api-version>4.0.1</javax.servlet-api-version>
 	</properties>
+	
 	<dependencies>
+	
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -31,16 +39,23 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+        </dependency>
 			
 		<dependency>
 		    <groupId>org.springframework.retry</groupId>
@@ -51,6 +66,11 @@
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-aspects</artifactId>
 		</dependency>
+		
+		 <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
 		
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
@@ -71,31 +91,31 @@
 		<dependency>
 		    <groupId>javax.annotation</groupId>
 		    <artifactId>javax.annotation-api</artifactId>
-		    <version>1.3.2</version>
+		    <version>${javax-annotation-version}</version>
 		</dependency>
 		
 		<dependency>
 		    <groupId>javax.validation</groupId>
 		    <artifactId>validation-api</artifactId>
-		    <version>2.0.1.Final</version>
+		    <version>${validation-api-version}</version>
 		</dependency>
 
  		<dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
-            <version>0.2.6</version>
+            <version>${jackson-databind-nullable-version}</version>
         </dependency>
 		
 		 <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-core-jakarta</artifactId>
-            <version>2.2.20</version>
+            <version>${swagger-core-version}</version>
         </dependency>
         
           <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
+            <version>${javax.servlet-api-version}</version>
             <scope>provided</scope>
         </dependency>
         
@@ -104,17 +124,29 @@
 			<artifactId>commons-codec</artifactId>
 		</dependency>
 		
+		<!--
 		<dependency>
 		  <groupId>joda-time</groupId>
 		  <artifactId>joda-time</artifactId>
 		  <version>2.10.5</version>
 		</dependency>
+		-->
 		
 		<dependency>
 		    <groupId>com.fasterxml.jackson.datatype</groupId>
 		    <artifactId>jackson-datatype-joda</artifactId>
 		</dependency>
-
+		
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpclient</artifactId>
+		    <version>${httpclient-version}</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpcore</artifactId>
+		</dependency>
 				
 	</dependencies>
 
