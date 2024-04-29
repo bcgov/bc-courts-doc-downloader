@@ -9,19 +9,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.RestController;
 
-import ca.bc.gov.ag.courts.api.TestApi;
+import ca.bc.gov.ag.courts.api.MsgtestApi;
 import ca.bc.gov.ag.courts.api.model.TestResponse;
-import ca.bc.gov.ag.courts.config.AppProperties;
 import ca.bc.gov.ag.courts.service.MSGraphServiceImpl;
 
 @RestController
-public class TestController implements TestApi {
+public class MSGraphTestController implements MsgtestApi {
 	
 	@Autowired 
 	MSGraphServiceImpl service; 
 
 	@Override
-	public ResponseEntity<TestResponse> testGet() {
+	public ResponseEntity<TestResponse> msgtestGet() {
 		
 		File file = fetchFileResource();
 

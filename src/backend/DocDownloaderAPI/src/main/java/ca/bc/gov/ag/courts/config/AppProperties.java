@@ -7,64 +7,114 @@ import org.springframework.stereotype.Component;
 @Component
 @PropertySource("classpath:application.properties")
 public class AppProperties {
+	
+	@Value("${application.password}")
+	private String applicationPassword;
+	
+	@Value("${application.username}")
+	private String applicationUsername;
 
 	@Value("${application.name}")
-	private String appName;
+	private String applicationName;
 	
 	@Value("${application.net.max.retries}")
-	private int retries;
+	private int maxRetries;
 	
 	@Value("${application.net.delay}")
-	private String delay;
+	private String retryDelay;
 
-	@Value("${ords.endpoint}")
-	private String ordsEndpoint;
+	@Value("${ords.ssg.base.url}")
+	private String ordsSsgBaseUrl;
 
-	@Value("${ords.auth.password}")
+	@Value("${ords.ssg.password}")
+	private String ordsSsgPassword;
+	
+	@Value("${ords.ssg.username}")
+	private String ordsSsgUsername;
+
+	@Value("${ords.put.id}")
+	private String ordsPutId;
+	
+	@Value("${ords.application.id}")
+	private String ordsApplicationId;
+	
+	@Value("${ords.username}")
+	private String ordsUsername;
+
+	@Value("${ords.password}")
 	private String ordsPassword;
+	
+	@Value("${ords.database.id}")
+	private String ordsDatabaseId;
+	
+	@Value("${ords.server}")
+	private String ordsServer;
 
-	@Value("${ords.auth.username}")
-	private String ordsUserName;
+	@Value("${ords.ticketlifetime}")
+	private String ordsTicketLifetime;
 
-	@Value("${ords.app.id}")
-	private String appId;
-
-	@Value("${ords.app.pwd}")
-	private String appPwd;
-
-	@Value("${ords.app.ticketlifetime}")
-	private String ticLifeTime;
-
-	public String getAppName() {
-		return appName;
+	public String getApplicationName() {
+		return applicationName;
 	}
 
-	public void setAppName(String appName) {
-		this.appName = appName;
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
 	}
 
-	public int getRetries() {
-		return retries;
+	public int getMaxRetries() {
+		return maxRetries;
 	}
 
-	public void setRetries(int retries) {
-		this.retries = retries;
+	public void setMaxRetries(int maxRetries) {
+		this.maxRetries = maxRetries;
 	}
 
-	public String getDelay() {
-		return delay;
+	public String getRetryDelay() {
+		return retryDelay;
 	}
 
-	public void setDelay(String delay) {
-		this.delay = delay;
+	public void setRetryDelay(String retryDelay) {
+		this.retryDelay = retryDelay;
 	}
 
-	public String getOrdsEndpoint() {
-		return ordsEndpoint;
+	public String getOrdsSsgBaseUrl() {
+		return ordsSsgBaseUrl;
 	}
 
-	public void setOrdsEndpoint(String ordsEndpoint) {
-		this.ordsEndpoint = ordsEndpoint;
+	public void setOrdsSsgBaseUrl(String ordsSsgBaseUrl) {
+		this.ordsSsgBaseUrl = ordsSsgBaseUrl;
+	}
+
+	public String getOrdsSsgPassword() {
+		return ordsSsgPassword;
+	}
+
+	public void setOrdsSsgPassword(String ordsSsgPassword) {
+		this.ordsSsgPassword = ordsSsgPassword;
+	}
+
+	public String getOrdsSsgUsername() {
+		return ordsSsgUsername;
+	}
+
+	public void setOrdsSsgUsername(String ordsSsgUsername) {
+		this.ordsSsgUsername = ordsSsgUsername;
+	}
+
+	public String getOrdsApplicationId() {
+		return ordsApplicationId;
+	}
+
+	public void setOrdsApplicationId(String ordsApplicationId) {
+		this.ordsApplicationId = ordsApplicationId;
+	}
+
+	public String getOrdsUsername() {
+		return ordsUsername;
+	}
+
+	public void setOrdsUsername(String ordsUsername) {
+		this.ordsUsername = ordsUsername;
 	}
 
 	public String getOrdsPassword() {
@@ -75,36 +125,52 @@ public class AppProperties {
 		this.ordsPassword = ordsPassword;
 	}
 
-	public String getOrdsUserName() {
-		return ordsUserName;
+	public String getOrdsTicketLifetime() {
+		return ordsTicketLifetime;
 	}
 
-	public void setOrdsUserName(String ordsUserName) {
-		this.ordsUserName = ordsUserName;
+	public void setOrdsTicketLifetime(String ordsTicketLifetime) {
+		this.ordsTicketLifetime = ordsTicketLifetime;
 	}
 
-	public String getAppId() {
-		return appId;
+	public String getOrdsPutId() {
+		return ordsPutId;
 	}
 
-	public void setAppId(String appId) {
-		this.appId = appId;
+	public void setOrdsPutId(String ordsPutId) {
+		this.ordsPutId = ordsPutId;
 	}
 
-	public String getAppPwd() {
-		return appPwd;
+	public String getOrdsDatabaseId() {
+		return ordsDatabaseId;
 	}
 
-	public void setAppPwd(String appPwd) {
-		this.appPwd = appPwd;
+	public void setOrdsDatabaseId(String ordsDatabaseId) {
+		this.ordsDatabaseId = ordsDatabaseId;
 	}
 
-	public String getTicLifeTime() {
-		return ticLifeTime;
+	public String getOrdsServer() {
+		return ordsServer;
 	}
 
-	public void setTicLifeTime(String ticLifeTime) {
-		this.ticLifeTime = ticLifeTime;
+	public void setOrdsServer(String ordsServer) {
+		this.ordsServer = ordsServer;
+	}
+
+	public String getApplicationPassword() {
+		return applicationPassword;
+	}
+
+	public void setApplicationPassword(String applicationPassword) {
+		this.applicationPassword = applicationPassword;
+	}
+
+	public String getApplicationUsername() {
+		return applicationUsername;
+	}
+
+	public void setApplicationUsername(String applicationUsername) {
+		this.applicationUsername = applicationUsername;
 	}
 
 }
