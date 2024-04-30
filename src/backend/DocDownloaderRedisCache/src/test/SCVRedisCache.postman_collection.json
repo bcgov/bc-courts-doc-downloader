@@ -293,6 +293,93 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Health Check",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "secret",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "client",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"0990993\",\r\n  \"guid\":\"d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyO\",\r\n  \"applicationId\": \"CeisCso\",\r\n  \"putId\":\"SCV\", \r\n  \"ordsTimeout\": false,\r\n  \"graphTimeout\": false,  \r\n  \"checksum\":\"56112BF23\", \r\n  \"graphSessionId\":\"78900011\",\r\n  \"error\": false, \r\n  \"lastErrorMessage\": \"wow\", \r\n  \"startDelivery\": \"2024-01-19T19:00-7:00\", \r\n  \"endDelivery\": null,\r\n  \"percentageComplete\": 65,\r\n  \"fileName\":\"TEST_3M.pdf\", \r\n  \"mimeType\":\"application/pdf\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/actuator/health",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"actuator",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "metrics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/actuator/metrics",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"actuator",
+						"metrics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "jvm.memory.used",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/actuator/metrics/jvm.memory.used",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"actuator",
+						"metrics",
+						"jvm.memory.used"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
