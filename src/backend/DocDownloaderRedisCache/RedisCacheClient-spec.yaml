@@ -1,0 +1,27 @@
+openapi: 3.0.0
+info:
+  version: 0.0.1
+  title: Courts Document Downloader Redis Cache Client
+  description: Courts File Download Redis Cache Client 
+servers:
+  - url: "http://localhost:8080"
+tags:
+  - name: Document Downloader Redis Cache Client
+paths:
+  /jobs:
+   get:
+      summary: get Jobs called 
+      tags: 
+        - Jobs view
+      description: Jobs view Status Request
+      responses:
+        '200':
+          description: 'Status returned successfully'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/jobsstatus_response"
+components:
+  schemas:
+    jobsstatus_response:
+      type: string
