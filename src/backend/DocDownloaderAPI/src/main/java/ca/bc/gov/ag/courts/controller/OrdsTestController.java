@@ -24,7 +24,7 @@ public class OrdsTestController implements OrdstestApi {
 	OrdsDocumentLookupService service;
 
 	@Override
-	public ResponseEntity<OrdsPushResponse> ordstestGet(@Parameter(name = "FiletransferRequest") @Valid @RequestBody(required = true) FiletransferRequest filetransferRequest) {
+	public ResponseEntity<OrdsPushResponse> ordstestPost(@Parameter(name = "FiletransferRequest") @Valid @RequestBody(required = true) FiletransferRequest filetransferRequest) {
 		
 		// Create a new Job from the request
 		Job job = new Job();
