@@ -47,15 +47,22 @@
 		</dependency>
 		
 		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		
+		<!-- Do not remove. 
 		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
         </dependency>
+		-->
 			
 		<dependency>
 		    <groupId>org.springframework.retry</groupId>
@@ -124,7 +131,7 @@
 			<artifactId>commons-codec</artifactId>
 		</dependency>
 		
-		<!--
+		<!-- Do not remove
 		<dependency>
 		  <groupId>joda-time</groupId>
 		  <artifactId>joda-time</artifactId>

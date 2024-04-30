@@ -4,7 +4,7 @@ package ca.bc.gov.ag.courts.model;
 
 import java.io.Serializable;
 
-import org.springframework.data.redis.core.RedisHash;
+//import org.springframework.data.redis.core.RedisHash;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @JsonPropertyOrder({ "id", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout", "checksum",
 		"graphSessionId", "error", "lastErrorMessage", "startDelivery", "endDelivery", "percentageComplete", "fileName",
 		"mimeType" })
-@RedisHash("Job")
+//@RedisHash("Job")
 @RequiredArgsConstructor
 /**
  * 
