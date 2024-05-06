@@ -25,9 +25,9 @@ public class DocumentController implements DocumentApi {
 	
 	@Override
 	public ResponseEntity<FiletransferResponse> documentUploadPost(
-	        @Parameter(name = "FiletransferRequest", description = "") @Valid @RequestBody(required = false) FiletransferRequest filetransferRequest) {
+	        @Parameter(name = "FiletransferRequest", description = "") @Valid @RequestBody(required = true) FiletransferRequest filetransferRequest) {
 		
-		logger.info("Heard a call to the document upload endpoint for docId " + new String(filetransferRequest.getObjGuid()));
+		logger.info("Heard a call to the document upload endpoint for docId: " + new String(filetransferRequest.getObjGuid()));
 		
 		//TODO 
 		FiletransferResponse resp = new FiletransferResponse();
@@ -40,7 +40,7 @@ public class DocumentController implements DocumentApi {
 	public ResponseEntity<FiletransferstatusResponse> documentStatusDocIdGet(
 	        @Min(1) @Parameter(name = "docId", description = "The document Id", required = true, in = ParameterIn.PATH) @PathVariable("docId") Integer docId) {
 		
-		logger.info("Heard a call to the document staus endpoint for docId " + docId);
+		logger.info("Heard a call to the document status endpoint for docId: " + docId);
 		
 		// TODO - This will come from Reddis
 		// TODO - Needs input params defined.
