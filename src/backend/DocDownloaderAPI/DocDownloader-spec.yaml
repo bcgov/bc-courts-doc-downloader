@@ -8,7 +8,7 @@ servers:
 tags:
   - name: Document Downloader API
 paths:
-  /fetch:
+  /document/upload:
     post:
       summary: File Tranfer Request
       tags:
@@ -26,9 +26,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/filetransfer_response"
-  /status:
+  /document/status/{docId}:
    get:
-      summary: Document fetch status endpoint 
+      parameters:
+        - in: path
+          name: docId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The document Id
+      summary: Document status endpoint 
       tags: 
         - File Transfer
       description: File Transfer Status Request
@@ -143,4 +151,4 @@ components:
         result:
           type: string
         error: 
-          type: string  
+          type: string
