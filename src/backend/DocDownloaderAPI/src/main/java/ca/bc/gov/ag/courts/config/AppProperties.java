@@ -17,6 +17,9 @@ public class AppProperties {
 	@Value("${application.name}")
 	private String applicationName;
 	
+	@Value("${application.version}")
+	private String applicationVersion;
+	
 	@Value("${application.net.max.retries}")
 	private int maxRetries;
 	
@@ -171,6 +174,14 @@ public class AppProperties {
 
 	public void setApplicationUsername(String applicationUsername) {
 		this.applicationUsername = applicationUsername;
+	}
+
+	public String getApplicationVersion() {
+		return applicationVersion;
+	}
+
+	public void setApplicationVersion(String applicationVersion) {
+		this.applicationVersion = applicationVersion;
 	}
 
 }
