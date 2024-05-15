@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{ISO8601} %highlight(%-5level) [%blue(%t)] %yellow(%C{1}): %msg%n%throwable</pattern>
+        </encoder>
+    </appender>
+
+    <if condition='isDefined("SPLUNK_URL")'>
+        <then>
+            <appender name="splunk" class="com.splunk.logging.HttpEventCollectorLogbackAppender">
+                <url>${SPLUNK_URL}</url>
+                <token>${SPLUNK_TOKEN}</token>
+                <source>redis-cache-client-app</source>
+                <host>${HOSTNAME}</host>
+                <sourcetype>redis-cache-client</sourcetype>
+                <middleware>HttpEventCollectorUnitTestMiddleware</middleware>
+                <disableCertificateValidation>true</disableCertificateValidation>
+                <batch_size_count>1</batch_size_count>
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>%msg</pattern>
+                </layout>
+            </appender>
+            <root level="INFO">
+                <appender-ref ref="STDOUT"/>
+                <appender-ref ref="splunk"/>
+            </root>
+        </then>
+        <else>
+            <root level="info">
+                <appender-ref ref="STDOUT"/>
+            </root>
+        </else>
+    </if>
+</configuration>
