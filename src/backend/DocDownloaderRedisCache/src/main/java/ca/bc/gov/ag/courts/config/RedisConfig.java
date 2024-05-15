@@ -3,6 +3,8 @@ package ca.bc.gov.ag.courts.config;
 import ca.bc.gov.ag.courts.queue.MessagePublisher;
 import ca.bc.gov.ag.courts.queue.RedisMessagePublisher;
 import ca.bc.gov.ag.courts.queue.RedisMessageSubscriber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -21,6 +23,8 @@ import org.springframework.data.redis.serializer.GenericToStringSerializer;
 @Profile({"prod", "dev", "splunk"})
 public class RedisConfig {
 
+    Logger logger = LoggerFactory.getLogger(RedisConfig.class);
+
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         return new JedisConnectionFactory();
@@ -32,6 +36,7 @@ public class RedisConfig {
         template.setConnectionFactory(jedisConnectionFactory());
         template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
         template.setEnableTransactionSupport(true);
+
         return template;
     }
 
@@ -42,6 +47,8 @@ public class RedisConfig {
 
     @Bean
     RedisMessageListenerContainer redisContainer() {
+        logger.info("RedisMessageListenerContainer starting url: " + jedisConnectionFactory().getHostName() + " port: " + jedisConnectionFactory().getPort());
+
         final RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(jedisConnectionFactory());
         container.addMessageListener(messageListener(), topic());
