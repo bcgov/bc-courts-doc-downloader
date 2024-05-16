@@ -5,6 +5,7 @@ import ca.bc.gov.ag.courts.queue.RedisMessagePublisher;
 import ca.bc.gov.ag.courts.queue.RedisMessageSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -25,6 +26,15 @@ public class RedisConfig {
 
     Logger logger = LoggerFactory.getLogger(RedisConfig.class);
 
+    private String host;
+    private Integer port;
+
+    public RedisConfig(@Value("${spring.redis.host}") String host, @Value("${spring.redis.port}") int port) {
+        logger.info("RedisConfig starting url: " + host + " port: " + port);
+        this.host = host;
+        this.port = port;
+    }
+
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         return new JedisConnectionFactory();
@@ -33,7 +43,8 @@ public class RedisConfig {
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         final RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(jedisConnectionFactory());
+        jedisConnectionFactory().setHostName(host);
+        jedisConnectionFactory().setPort(port);
         template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
         template.setEnableTransactionSupport(true);
 
