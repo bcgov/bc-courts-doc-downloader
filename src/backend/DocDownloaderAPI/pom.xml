@@ -24,6 +24,7 @@
 		<jackson-databind-nullable-version>0.2.6</jackson-databind-nullable-version>
 		<swagger-core-version>2.2.20</swagger-core-version>
 		<javax.servlet-api-version>4.0.1</javax.servlet-api-version>
+		<org-json-version>20090211</org-json-version>
 	</properties>
 	
 	<dependencies>
@@ -78,6 +79,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+        
+        <dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>${org-json-version}</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>

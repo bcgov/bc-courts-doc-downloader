@@ -22,15 +22,8 @@ public class MSGraphTestController implements MsgtestApi {
 	@Override
 	public ResponseEntity<TestResponse> msgtestGet() {
 		
-		File file = fetchFileResource();
-
-		final String clientId = "c85283ca-1ebd-49ba-bad0-c189c2811c07"; // app created for shaunmillaris@gmail.com
-		final String tenantId = "7029ed61-6fd4-4648-82ed-e33d7f2d7f2c"; // or "common" for multi-tenant apps
-		//final String tenantId = "common"; // or "common" for multi-tenant apps
-
-		final String[] scopes = new String[] { "Files.ReadWrite.All" }; // necessary for writing a file.
-
-		TestResponse resp = service.UploadFile(clientId, tenantId, scopes, file);
+		TestResponse resp = new TestResponse();
+		resp.setResult("Not Implemented");
 		
 		return new ResponseEntity<TestResponse>(resp, HttpStatus.OK);
 	}
