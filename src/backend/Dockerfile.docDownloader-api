@@ -20,6 +20,9 @@ FROM eclipse-temurin:17-jre-alpine
 # ARG MVN_PROFILES
 ARG SERVICE_NAME
 
+RUN apk update
+RUN apk add busybox-extras
+
 EXPOSE 8080
 
 COPY --from=build ./${SERVICE_NAME}/target/${SERVICE_NAME}-*.jar /deployments/service.jar
