@@ -42,9 +42,10 @@ public class RedisConfig {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
-        final RedisTemplate<String, Object> template = new RedisTemplate<>();
         jedisConnectionFactory().setHostName(host);
         jedisConnectionFactory().setPort(port);
+        final RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(jedisConnectionFactory());
         template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
         template.setEnableTransactionSupport(true);
 
