@@ -61,11 +61,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/ping_response"
   /msgtest:
-   get: 
+   post:
       summary: A MS Graph Test Operation. To be removed for prod. 
       tags: 
         - Test
       description: A MS Graph Test Operation. To be removed for prod
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/msgtest_request"
       responses:
         '200':
           description: Success
@@ -152,3 +157,9 @@ components:
           type: string
         error: 
           type: string
+    msgtest_request:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: 'An MS Graph Access Token'  

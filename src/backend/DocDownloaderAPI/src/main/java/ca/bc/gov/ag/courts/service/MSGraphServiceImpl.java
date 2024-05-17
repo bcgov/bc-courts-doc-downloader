@@ -1,27 +1,31 @@
-/**
- * 
- */
+
 package ca.bc.gov.ag.courts.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.util.concurrent.CompletableFuture;
 
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
-import com.azure.identity.DeviceCodeCredential;
-import com.azure.identity.DeviceCodeCredentialBuilder;
-import com.microsoft.graph.core.models.IProgressCallback;
-import com.microsoft.graph.core.models.UploadResult;
-import com.microsoft.graph.core.tasks.LargeFileUploadTask;
-import com.microsoft.graph.drives.item.items.item.createuploadsession.CreateUploadSessionPostRequestBody;
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.models.UploadSession;
-import com.microsoft.graph.serviceclient.GraphServiceClient;
-
-import ca.bc.gov.ag.courts.api.model.TestResponse;
+import ca.bc.gov.ag.courts.Utils.HttpClientHelper;
+import ca.bc.gov.ag.courts.config.AppProperties;
 
 
 /**
@@ -35,73 +39,132 @@ import ca.bc.gov.ag.courts.api.model.TestResponse;
 @Service
 public class MSGraphServiceImpl implements MSGraphService {
 
-	@Override
-	public TestResponse UploadFile(String clientId, String tenantId, String[] scopes, File file) {
+	private static final Logger logger = LoggerFactory.getLogger(MSGraphServiceImpl.class);
+	
+	@Autowired
+    AppProperties props; 
+	
+	/**
+	 * 
+	 * Create upload session
+	 * 
+	 * @param accessToken
+	 * @param fileFolder
+	 * @param fileName
+	 * @return
+	 * @throws Exception
+	 */
+	@Async
+	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
+	public CompletableFuture<String> createUploadSession(String accessToken, String fileFolder, String fileName) throws Exception {
+		
+		//ref: https://learn.microsoft.com/en-us/onedrive/developer/rest-api/api/driveitem_createuploadsession?view=odsp-graph-online#create-an-upload-session
+		
+		logger.debug("Calling createUploadSession...retry count: " + RetrySynchronizationManager.getContext().getRetryCount());
+		logger.debug("Processing createUploadSession asynchronously with Thread {}", Thread.currentThread().getName());
+    	
+    	// Microsoft Graph user upload location
+        URI uri = new URI(props.getMsgEndpointHost() + "v1.0/me/drive/root:/" + fileFolder + "/" + fileName + ":/createUploadSession");
+        
+        RestTemplate restTemplate = new RestTemplate();
+        
+        String jsonBody = "{\"item\":{\"@microsoft.graph.conflictBehavior\": \"replace\",\"name\": \"" + fileName + "\"}}";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");   
+        headers.set("Content-Length", Integer.toString(jsonBody.length()));   
+        headers.set("Authorization", "Bearer " + accessToken);
+        headers.set("Accept", "application/json");
+        
+        HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
+        
+        ResponseEntity<String> response = null;
+        try {
+        	response = restTemplate.postForEntity(uri, request, String.class); 
+        } catch (RestClientException rce) {
+        	throw new Exception(rce);
+        }
+        
+        HttpStatusCode statusCode = response.getStatusCode();
+        
+        if(statusCode.is2xxSuccessful()) {  
+          
+	        JSONObject responseObject = HttpClientHelper.processResponse(statusCode.value(), response.getBody());
+	        return CompletableFuture.completedFuture(responseObject.getJSONObject("responseMsg").getString("uploadUrl"));
+        
+        } else {
+        	
+        	 JSONObject responseObject = HttpClientHelper.processResponse(statusCode.value(), response.getBody());
+        	 String errorMessage = "Error creating upload session: " + responseObject.getJSONObject("responseMsg").getString("message");
+        	 logger.error(errorMessage);
+        	 throw new Exception(errorMessage);
+        }
+		
+	}
+		
+	/**
+	 * 
+	 * Upload a Chunk
+	 * 
+	 * @param uploadUrl
+	 * @param count
+	 * @param fileSize
+	 * @param chunk
+	 * @param fragSize
+	 * @param chunkSize
+	 * @return
+	 * @throws Exception
+	 * 
+	 * Note: Presently this method can not use Spring RestTemplate for uploading file content. 
+	 */
+	@Async
+	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
+	public CompletableFuture<JSONObject> uploadChunk(String uploadUrl, int count, long fileSize, byte[] chunk, int fragSize, int chunkSize) throws Exception {
 
-		TestResponse response = new TestResponse();
-		response.setResult("Success");
-
+		logger.debug("Processing uploadChunk asynchronously with Thread {}", Thread.currentThread().getName());
+		logger.debug("Calling uploadChunk...retry count: " + RetrySynchronizationManager.getContext().getRetryCount());
+		
 		try {
 
-			final DeviceCodeCredential credential = new DeviceCodeCredentialBuilder().clientId(clientId)
-					.tenantId(tenantId).challengeConsumer(challenge -> {
-						// Display challenge to the user
-						System.out.println(challenge.getMessage());
-					}).build();
+			HttpURLConnection uploadConnection = (HttpURLConnection) new URL(uploadUrl).openConnection();
+			uploadConnection.setRequestMethod("PUT");
+			uploadConnection.setRequestProperty("Accept", "application/json"); // a must otherwise 400 bad requests will occur.
+			uploadConnection.setRequestProperty("Content-Length", Integer.toString(chunk.length));
 
-			if (null == scopes || null == credential) {
-				throw new Exception("Unexpected error");
-			}
+			// The Content-Range header must be set for each fragment. 
+			// For example: Content-Range: bytes 0-25/128
+			String range = "bytes start-end/fileSize";
 
-			GraphServiceClient graphClient = new GraphServiceClient(credential, scopes);
+			range = StringUtils.replace(range, "start", Integer.toString(count * fragSize));
+			range = StringUtils.replace(range, "end", Integer.toString(count * fragSize + chunkSize - 1));
+			range = StringUtils.replace(range, "fileSize", Long.toString(fileSize));
 
-			InputStream fileStream = new FileInputStream(file);
-			long streamSize = file.length();
+			logger.debug("Uploading content-range: " + range);
 
-			// Set body of the upload session request
-			CreateUploadSessionPostRequestBody uploadSessionRequest = new CreateUploadSessionPostRequestBody();
+			uploadConnection.setRequestProperty("Content-Range", range);
+			uploadConnection.setDoOutput(true);
+			OutputStream outputStream = uploadConnection.getOutputStream();
+			outputStream.write(chunk);
+			outputStream.flush();
+			outputStream.close();
 
-			Map<String, Object> addDataMap = new HashMap<String, Object>();
-			addDataMap.put("@microsoft.graph.conflictBehavior", "replace");
-			uploadSessionRequest.setAdditionalData(addDataMap);
+			String response = HttpClientHelper.getResponseStringFromConn(uploadConnection);
+			int responseCode = uploadConnection.getResponseCode();
 
-			String itemPath = "uploadedFromApi.txt"; // name of the file that will be placed on OneDrive. 
-
-			// Create an upload session
-			// ItemPath does not need to be a path to an existing item
-			String myDriveId = graphClient.me().drive().get().getId();
-
-			UploadSession uploadSession = graphClient.drives().byDriveId(myDriveId).items()
-					.byDriveItemId("root:/" + itemPath + ":").createUploadSession().post(uploadSessionRequest);
-
-			// Create the upload task
-			int maxSliceSize = 320 * 10;
-			LargeFileUploadTask<DriveItem> largeFileUploadTask = new LargeFileUploadTask<>(
-					graphClient.getRequestAdapter(), uploadSession, fileStream, streamSize, maxSliceSize,
-					DriveItem::createFromDiscriminatorValue);
-
-			int maxAttempts = 5;
-
-			// Create a callback used by the upload provider
-			IProgressCallback callback = (current, max) -> System.out
-					.println(String.format("Uploaded %d bytes of %d total bytes", current, max));
-
-			// Do the upload
-			UploadResult<DriveItem> uploadResult = largeFileUploadTask.upload(maxAttempts, callback);
-			if (uploadResult.isUploadSuccessful()) {
-				System.out.println("Upload complete");
-				System.out.println("Item ID: " + uploadResult.itemResponse.getId());
+			if (responseCode >= 400) {
+				logger.error("File upload chunk failure. Response: " + response);
+				throw new Exception("Unexpected 40x error."); 
 			} else {
-				response.setResult("Failed");
-				response.setError("Upload Failed");
+				logger.debug("Chunk response: " + response);
 			}
+			
+			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response));
 
 		} catch (Exception ex) {
-			response.setResult("Failed");
-			response.setError(ex.getMessage());
+			logger.error("Unexpected error at uploadChunk: " + ex.getMessage());
+			ex.printStackTrace();
+			throw ex;
 		}
-
-		return response;
 
 	}
 

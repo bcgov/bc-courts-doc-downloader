@@ -55,6 +55,19 @@ public class AppProperties {
 
 	@Value("${ords.ticketlifetime}")
 	private String ordsTicketLifetime;
+	
+	@Value("${msg.clientId}")
+	private String msgClientId;
+	
+	@Value("${msg.authority}")
+	private String msgAuthority;
+	
+	@Value("${msg.secretKey}")
+	private String msgSecretKey;
+	
+	@Value("${msg.endpointHost}")
+	private String msgEndpointHost;
+
 
 	public String getApplicationName() {
 		return applicationName;
@@ -183,5 +196,38 @@ public class AppProperties {
 	public void setApplicationVersion(String applicationVersion) {
 		this.applicationVersion = applicationVersion;
 	}
+
+	public String getMsgClientId() {
+		return msgClientId;
+	}
+
+	public void setMsgClientId(String msgClientId) {
+		this.msgClientId = msgClientId;
+	}
+
+	public String getMsgAuthority() {
+		return msgAuthority;
+	}
+
+	public void setMsgAuthority(String msgAuthority) {
+		this.msgAuthority = msgAuthority;
+	}
+
+	public String getMsgSecretKey() {
+		return msgSecretKey;
+	}
+
+	public void setMsgSecretKey(String msgSecretKey) {
+		this.msgSecretKey = msgSecretKey;
+	}
+
+	public String getMsgEndpointHost() {
+		return msgEndpointHost;
+	}
+
+	public void setMsgEndpointHost(String msgEndpointHost) {
+		this.msgEndpointHost = msgEndpointHost;
+	}
+
 
 }
