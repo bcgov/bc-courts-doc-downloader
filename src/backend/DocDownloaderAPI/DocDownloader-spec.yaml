@@ -14,6 +14,11 @@ paths:
       tags:
         - File Transfer
       description: File Transfer Request
+      parameters:
+       - in: header
+         name: X-Correlation-Id
+         schema: 
+           type: string
       requestBody:
         content:
           application/json:
@@ -106,7 +111,7 @@ components:
         obj_guid: 
            type: string
            format: byte
-           description: 'An Object Guid as base64'  
+           description: 'An Object Guid as base64'
     filetransfer_response:
       type: object
       properties:
@@ -160,6 +165,9 @@ components:
     msgtest_request:
       type: object
       properties:
-        accessToken:
+        email:
           type: string
-          description: 'An MS Graph Access Token'  
+          description: 'The email of the OneDrive user.'
+        folder:
+          type: string
+          description: 'The OneDrive folder name to write the test file to.'  

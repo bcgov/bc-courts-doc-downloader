@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.Valid;
@@ -19,6 +18,7 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import ca.bc.gov.ag.courts.Utils.AuthHelper;
 import ca.bc.gov.ag.courts.api.MsgtestApi;
 import ca.bc.gov.ag.courts.api.model.MsgtestRequest;
 import ca.bc.gov.ag.courts.api.model.TestResponse;
@@ -30,6 +30,9 @@ public class MSGraphTestController implements MsgtestApi {
 	
 	@Autowired 
 	MSGraphServiceImpl msgService; 
+	
+	@Autowired
+	AuthHelper authService; 
 	
 	static String fileName = "testfile.txt";
 	static String fileFolder = "MSGraphTestFolder";
@@ -45,9 +48,29 @@ public class MSGraphTestController implements MsgtestApi {
 		
 		try {
 			
-			logger.info("Initiating MS Graph file upload test for : " + fileName);
+			logger.debug("Initiating MS Graph file upload test for : " + fileName);
+			
+			String token; 
+			
+			JSONObject jResponse = null; 
+			CompletableFuture<JSONObject> at = authService.GetAccessToken();
+			jResponse = at.get();
+			if (jResponse.getInt("responseCode") == HttpStatus.OK.value())  
+					token = jResponse.getJSONObject("responseMsg").getString("access_token");
+			else 
+				throw new Exception(jResponse.getJSONObject("responseMsg").getJSONObject("error").getString("message")); 
+			
+			logger.debug("token: " + token);
+			
+			String userId; 
+			CompletableFuture<JSONObject> ui = msgService.GetUserId(token, msgtestRequest.getEmail());
+			jResponse = ui.get();
+			if (jResponse.getInt("responseCode") == HttpStatus.OK.value())  
+				userId = jResponse.getJSONObject("responseMsg").getString("id");
+			else 
+				throw new Exception(jResponse.getJSONObject("responseMsg").getJSONObject("error").getString("message")); 
 
-			CompletableFuture<String> sessionResponse  = msgService.createUploadSession(msgtestRequest.getAccessToken(), fileFolder, fileName);
+			CompletableFuture<String> sessionResponse  = msgService.createUploadSessionFromUserId(token, userId, fileFolder, fileName);
 			String uploadUrl = sessionResponse.get();
 			
 			// Load file from resources folder.
@@ -61,7 +84,7 @@ public class MSGraphTestController implements MsgtestApi {
 			logger.info("Completed file upload for : " + fileName);
 			logger.info("Resp: " + uploadResponse.get().toString());
 			
-			return new ResponseEntity<TestResponse>(resp, HttpStatus.OK);
+			return new ResponseEntity<TestResponse>(resp, HttpStatus.CREATED);
 			
 
 		} catch (Exception ex) {
@@ -84,7 +107,7 @@ public class MSGraphTestController implements MsgtestApi {
 	 */
 	private CompletableFuture<JSONObject> uploadFileInChunks(File file, String uploadUrl, long fileSize) throws Exception {
 		
-		URI uri = new URI(uploadUrl);
+		//URI uri = new URI(uploadUrl);
 		
 		// Upload file in chunks
 	    int fragSize = 320 * 1024;

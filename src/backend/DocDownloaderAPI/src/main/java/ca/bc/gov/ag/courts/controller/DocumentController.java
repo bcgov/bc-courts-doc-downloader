@@ -5,10 +5,12 @@ import javax.validation.constraints.Min;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import ca.bc.gov.ag.courts.api.DocumentApi;
@@ -25,7 +27,11 @@ public class DocumentController implements DocumentApi {
 	
 	@Override
 	public ResponseEntity<FiletransferResponse> documentUploadPost(
-	        @Parameter(name = "FiletransferRequest", description = "") @Valid @RequestBody(required = true) FiletransferRequest filetransferRequest) {
+	        @Parameter(name = "X-Correlation-Id", description = "", in = ParameterIn.HEADER) @RequestHeader(value = "X-Correlation-Id", required = false) String xCorrelationId,
+	        @Parameter(name = "FiletransferRequest", description = "") @Valid @RequestBody(required = false) FiletransferRequest filetransferRequest
+	    ) {
+		
+		MDC.put("correlationid", xCorrelationId);
 		
 		logger.info("Heard a call to the document upload endpoint for docId: " + new String(filetransferRequest.getObjGuid()));
 		
@@ -33,6 +39,9 @@ public class DocumentController implements DocumentApi {
 		FiletransferResponse resp = new FiletransferResponse();
 		resp.setAcknowledge(true);
 		resp.setDetail("tobedone");
+		
+		MDC.remove("correlationid");
+		
 		return new ResponseEntity<FiletransferResponse>(resp, HttpStatus.ACCEPTED);
 	}
 	
