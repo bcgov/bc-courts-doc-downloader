@@ -24,7 +24,7 @@ public class AppStartupListener implements ApplicationListener<ApplicationReadyE
 	@Override
 	public void onApplicationEvent(final ApplicationReadyEvent event) {
 		
-		logger.info("BC Courts Doc Downlaoder API startuping up. Version: " + props.getApplicationVersion());
+		logger.info("BC Courts Doc Downloader API starting up. Version: " + props.getApplicationVersion());
 		return;
 	}
 }
