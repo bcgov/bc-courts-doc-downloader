@@ -9,15 +9,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.retry.support.RetrySynchronizationManager;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import ca.bc.gov.ag.courts.config.AppProperties;
@@ -35,22 +32,14 @@ public class AuthHelper {
     private String secretKey;
     private String authority;
     
-    private final String emailRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@" 
-	        + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-    
-    
     @Autowired
 	AppProperties props; 
-    
-    Pattern emailPattern;  
 
     @PostConstruct
     public void init() {
         clientId = props.getMsgClientId();
         authority = props.getMsgAuthority();
         secretKey = props.getMsgSecretKey();
-        
-        emailPattern = Pattern.compile(emailRegex);
     }
 
     
