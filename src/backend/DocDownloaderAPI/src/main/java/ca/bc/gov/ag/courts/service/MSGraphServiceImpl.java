@@ -137,9 +137,9 @@ public class MSGraphServiceImpl implements MSGraphService {
 	public CompletableFuture<String> createUploadSessionFromUserId(String accessToken, String userId, String fileFolder,
 				String fileName) throws Exception {	
 
-		logger.debug("Calling createUploadSessionFromEmail...retry count: "
+		logger.debug("Calling createUploadSessionFromUserId...retry count: "
 				+ RetrySynchronizationManager.getContext().getRetryCount());
-		logger.debug("Processing createUploadSessionFromEmail asynchronously with Thread {}",
+		logger.debug("Processing createUploadSessionFromUserId asynchronously with Thread {}",
 				Thread.currentThread().getName());
 
 		URI uri = new URI(props.getMsgEndpointHost() + "v1.0/users/" + userId + "/drive/root:/" + fileFolder + "/"
