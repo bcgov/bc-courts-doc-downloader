@@ -1,19 +1,24 @@
-
 package ca.bc.gov.ag.courts.service;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -26,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 
 import ca.bc.gov.ag.courts.Utils.HttpClientHelper;
 import ca.bc.gov.ag.courts.config.AppProperties;
+import jakarta.annotation.PostConstruct;
 
 
 /**
@@ -40,13 +46,24 @@ import ca.bc.gov.ag.courts.config.AppProperties;
 public class MSGraphServiceImpl implements MSGraphService {
 
 	private static final Logger logger = LoggerFactory.getLogger(MSGraphServiceImpl.class);
-	
+
 	@Autowired
-    AppProperties props; 
+	AppProperties props;
+
+	private final String emailRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
+			+ "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
+
+	private Pattern emailPattern;
+
+	@PostConstruct
+	public void init() {
+		emailPattern = Pattern.compile(emailRegex);
+	}
 	
 	/**
 	 * 
-	 * Create upload session
+	 * Create upload session. Only works with a token derived using OAuth2 Authorization Code flow.  (e.g., token created 
+	 * on behalf of the user).  
 	 * 
 	 * @param accessToken
 	 * @param fileFolder
@@ -68,6 +85,7 @@ public class MSGraphServiceImpl implements MSGraphService {
         
         RestTemplate restTemplate = new RestTemplate();
         
+        // see https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0 regarding behavior 
         String jsonBody = "{\"item\":{\"@microsoft.graph.conflictBehavior\": \"replace\",\"name\": \"" + fileName + "\"}}";
         
         HttpHeaders headers = new HttpHeaders();
@@ -82,6 +100,7 @@ public class MSGraphServiceImpl implements MSGraphService {
         try {
         	response = restTemplate.postForEntity(uri, request, String.class); 
         } catch (RestClientException rce) {
+        	logger.error(rce.getMessage());
         	throw new Exception(rce);
         }
         
@@ -100,6 +119,68 @@ public class MSGraphServiceImpl implements MSGraphService {
         	 throw new Exception(errorMessage);
         }
 		
+	}
+	
+	/**
+	 * 
+	 * Create upload session with User Id. Only works with a token derived using OAuth2 Client Credentials flow.  (e.g., token created 
+	 * on behalf of the application (app-only as opposed to delegated)). 
+	 * 
+	 * @param accessToken
+	 * @param fileFolder
+	 * @param fileName
+	 * @return
+	 * @throws Exception
+	 */
+	@Async
+	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
+	public CompletableFuture<String> createUploadSessionFromUserId(String accessToken, String userId, String fileFolder,
+				String fileName) throws Exception {	
+
+		logger.debug("Calling createUploadSessionFromUserId...retry count: "
+				+ RetrySynchronizationManager.getContext().getRetryCount());
+		logger.debug("Processing createUploadSessionFromUserId asynchronously with Thread {}",
+				Thread.currentThread().getName());
+
+		URI uri = new URI(props.getMsgEndpointHost() + "v1.0/users/" + userId + "/drive/root:/" + fileFolder + "/"
+				+ fileName + ":/createUploadSession");
+
+		RestTemplate restTemplate = new RestTemplate();
+
+		// https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0 regarding behavior
+		String jsonBody = "{\"item\":{\"@microsoft.graph.conflictBehavior\": \"replace\",\"name\": \"" + fileName + "\"}}";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Content-Type", "application/json");
+		headers.set("Content-Length", Integer.toString(jsonBody.length()));
+		headers.set("Authorization", "Bearer " + accessToken);
+		headers.set("Accept", "application/json");
+
+		HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
+
+		ResponseEntity<String> response = null;
+		try {
+			response = restTemplate.postForEntity(uri, request, String.class);
+		} catch (RestClientException rce) {
+			logger.error(rce.getMessage());
+			throw new Exception(rce);
+		}
+
+		HttpStatusCode statusCode = response.getStatusCode();
+
+		if (statusCode.is2xxSuccessful()) {
+
+			JSONObject responseObject = HttpClientHelper.processResponse(statusCode.value(), response.getBody());
+			return CompletableFuture
+					.completedFuture(responseObject.getJSONObject("responseMsg").getString("uploadUrl"));
+
+		} else {
+
+			JSONObject responseObject = HttpClientHelper.processResponse(statusCode.value(), response.getBody());
+			String errorMessage = "Error creating upload session from email: " + responseObject.getJSONObject("responseMsg").getString("message");
+			logger.error(errorMessage);
+			throw new Exception(errorMessage);
+		}
 	}
 		
 	/**
@@ -166,6 +247,63 @@ public class MSGraphServiceImpl implements MSGraphService {
 			throw ex;
 		}
 
+	}
+	
+	/**
+	 * getUserId
+	 * 
+	 * App must have the following role(s) set to execute the 'users' search operation: User.Read.All 
+	 * 
+	 * @param accessToken
+	 * @param email
+	 * @return
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	@Async
+	public CompletableFuture<JSONObject> GetUserId(String accessToken, String email) throws MalformedURLException, IOException, JSONException {
+	
+		if (!validateEmail(email)) {
+			
+			String jError = "{\"error\": {\"code\": \"Invalid Email format\",\"message\": \"Invalid Email format\"}}"; 
+			
+			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(HttpStatus.BAD_REQUEST.value(), jError)); 
+		}
+
+		String useridQuery = props.getMsgEndpointHost() + "v1.0/users('" + email + "')";
+
+		HttpURLConnection connection = null;
+		URL url = new URL(useridQuery);
+		connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestMethod("GET"); 
+	    connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+	    connection.setRequestProperty("Accept", "*/*");
+	    
+	    int responseCode = connection.getResponseCode();
+		String response = HttpClientHelper.getResponseStringFromConn(connection);
+		
+		if (responseCode >= 300) {
+			logger.error("GetUserId failure. Response: " + response);
+			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response)); 
+		} else {
+			logger.debug("GetUserId request response: " + response);
+		}
+
+		return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response));
+
+	}
+	
+	/**
+	 * 
+	 * Utility function to validate email format. 
+	 * 
+	 * @param email
+	 * @return
+	 */
+	private boolean validateEmail(String email) {
+		Matcher matcher = emailPattern.matcher(email);
+	    return matcher.matches();
 	}
 
 }

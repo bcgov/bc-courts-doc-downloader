@@ -12,7 +12,7 @@ import ca.bc.gov.ag.courts.config.AppProperties;
 @Component
 public class AppStartupListener implements ApplicationListener<ApplicationReadyEvent> {
 	
-	static final Logger log = LoggerFactory.getLogger(AppStartupListener.class);
+	static final Logger logger = LoggerFactory.getLogger(AppStartupListener.class);
 	
 	@Autowired
 	AppProperties props; 
@@ -24,7 +24,7 @@ public class AppStartupListener implements ApplicationListener<ApplicationReadyE
 	@Override
 	public void onApplicationEvent(final ApplicationReadyEvent event) {
 		
-		log.info("BC Courts Doc Downlaoder API startuping up. Version: " + props.getApplicationVersion());
+		logger.info("BC Courts Doc Downloader API starting up. Version: " + props.getApplicationVersion());
 		return;
 	}
 }
