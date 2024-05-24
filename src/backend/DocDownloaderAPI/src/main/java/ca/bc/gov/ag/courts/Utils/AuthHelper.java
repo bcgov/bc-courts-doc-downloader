@@ -14,7 +14,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ca.bc.gov.ag.courts.config.AppProperties;
@@ -32,8 +31,11 @@ public class AuthHelper {
     private String secretKey;
     private String authority;
     
-    @Autowired
-	AppProperties props; 
+	private AppProperties props; 
+	
+	public AuthHelper(AppProperties props) {
+		this.props = props; 
+	}
 
     @PostConstruct
     public void init() {
@@ -41,7 +43,6 @@ public class AuthHelper {
         authority = props.getMsgAuthority();
         secretKey = props.getMsgSecretKey();
     }
-
     
     /** 
      * 

@@ -1,9 +1,8 @@
 package ca.bc.gov.ag.courts.controller;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.Valid;
@@ -11,10 +10,8 @@ import javax.validation.Valid;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,16 +25,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 @RestController
 public class MSGraphTestController implements MsgtestApi {
 	
-	@Autowired 
-	MSGraphServiceImpl msgService; 
-	
-	@Autowired
-	AuthHelper authService; 
-	
-	static String fileName = "testfile.txt";
-	static String fileFolder = "MSGraphTestFolder";
-	
 	Logger logger = LoggerFactory.getLogger(MSGraphTestController.class);
+
+	private final AuthHelper authService; 
+	private final MSGraphServiceImpl msgService;
+	
+	public MSGraphTestController(AuthHelper authService, MSGraphServiceImpl msgService) {
+		this.authService = authService;
+		this.msgService = msgService; 
+	}	
 
 	@Override
 	public ResponseEntity<TestResponse> msgtestPost(
@@ -48,7 +44,7 @@ public class MSGraphTestController implements MsgtestApi {
 		
 		try {
 			
-			logger.debug("Initiating MS Graph file upload test for : " + fileName);
+			logger.debug("Initiating MS Graph file upload test for : " + msgtestRequest.getFileName());
 			
 			String token; 
 			
@@ -70,18 +66,15 @@ public class MSGraphTestController implements MsgtestApi {
 			else 
 				throw new Exception(jResponse.getJSONObject("responseMsg").getJSONObject("error").getString("message")); 
 
-			CompletableFuture<String> sessionResponse  = msgService.createUploadSessionFromUserId(token, userId, fileFolder, fileName);
+			CompletableFuture<String> sessionResponse  = msgService.createUploadSessionFromUserId(token, userId, msgtestRequest.getFolder(), msgtestRequest.getFileName());
 			String uploadUrl = sessionResponse.get();
 			
-			// Load file from resources folder.
-			File file = ResourceUtils.getFile("classpath:" + fileName);
+			long fileSize = msgtestRequest.getData().length;
 			
-			long fileSize = file.length(); 
-			
-			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(file, uploadUrl, fileSize);
+			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(msgtestRequest.getData(), uploadUrl, fileSize);
 			
 			uploadResponse.get();
-			logger.info("Completed file upload for : " + fileName);
+			logger.info("Completed file upload for : " + msgtestRequest.getFileName());
 			logger.info("Resp: " + uploadResponse.get().toString());
 			
 			return new ResponseEntity<TestResponse>(resp, HttpStatus.CREATED);
@@ -97,75 +90,59 @@ public class MSGraphTestController implements MsgtestApi {
 	
 	/**
 	 * 
-	 * Upload in chunks. 
+	 * Upload file content in chunks
 	 * 
-	 * @param file
+	 * @param content
 	 * @param uploadUrl
 	 * @param fileSize
 	 * @return
 	 * @throws Exception
 	 */
-	private CompletableFuture<JSONObject> uploadFileInChunks(File file, String uploadUrl, long fileSize) throws Exception {
-		
-		//URI uri = new URI(uploadUrl);
-		
+	private CompletableFuture<JSONObject> uploadFileInChunks(byte[] content, String uploadUrl, long fileSize) throws Exception {
+
 		// Upload file in chunks
-	    int fragSize = 320 * 1024;
-	    int numFragments = (int) ((fileSize / fragSize) + 1);    
-	    byte[] buffer = new byte[fragSize];
-	    
-	    logger.info("FileSize being uploaded: " + fileSize);
-	    logger.info("Number of fragments: " + numFragments);
-	    
-	    int bytesRead;
-	    
-	    JSONObject lastResponseObject = null; 
-	    
-	    try (FileInputStream fis = new FileInputStream(file); BufferedInputStream bis = new BufferedInputStream(fis)) {
-	    	
-	    	long bytesRemaining = fileSize; 
-	    	int count = 0;
-	    	 
-	        while ((bytesRead = bis.read(buffer)) != -1) {
-	        	
-	        	 int chunkSize = fragSize;
-	             
-	             if (bytesRemaining < chunkSize) {
-	                 chunkSize = (int) bytesRemaining;
-	             }
-	             
-	             byte[] chunk = new byte[bytesRead];
-	             System.arraycopy(buffer, 0, chunk, 0, bytesRead);
-	             
-	             CompletableFuture<JSONObject> chunkResponse = msgService.uploadChunk(uploadUrl, count, fileSize, chunk, fragSize, chunkSize);
-	             lastResponseObject = chunkResponse.get();
-	             
-	             logger.debug("Chunk " + count + " uploaded."); 
-	           	 
-	           	 bytesRemaining = bytesRemaining - chunkSize;
-	           	 count++;
-	        }
-	    }
-	    
-	    return CompletableFuture.completedFuture(lastResponseObject);
-	   
+		int fragSize = 320 * 1024;
+		int numFragments = (int) ((fileSize / fragSize) + 1);
+		byte[] buffer = new byte[fragSize];
+
+		logger.info("FileSize being uploaded: " + fileSize);
+		logger.info("Number of fragments: " + numFragments);
+
+		int bytesRead;
+
+		JSONObject lastResponseObject = null;
+		
+		InputStream fileStream = new ByteArrayInputStream(content);   
+
+		try (BufferedInputStream bis = new BufferedInputStream(fileStream)) {
+
+			long bytesRemaining = fileSize;
+			int count = 0;
+
+			while ((bytesRead = bis.read(buffer)) != -1) {
+
+				int chunkSize = fragSize;
+
+				if (bytesRemaining < chunkSize) {
+					chunkSize = (int) bytesRemaining;
+				}
+
+				byte[] chunk = new byte[bytesRead];
+				System.arraycopy(buffer, 0, chunk, 0, bytesRead);
+
+				CompletableFuture<JSONObject> chunkResponse = msgService.uploadChunk(uploadUrl, count, fileSize, chunk,
+						fragSize, chunkSize);
+				lastResponseObject = chunkResponse.get();
+
+				logger.debug("Chunk " + count + " uploaded.");
+
+				bytesRemaining = bytesRemaining - chunkSize;
+				count++;
+			}
+		}
+
+		return CompletableFuture.completedFuture(lastResponseObject);
+
 	}
 	
-	
-	
-	/**
-	 * Load file from Springboot resources folder. 
-	 * 
-	 * @return
-	 */
-    public static File fetchFileResource(){
-    	File file = null; 
-        try {
-            file = ResourceUtils.getFile("classpath:" + fileName);
-            return file; 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return file; 
-    }
 }

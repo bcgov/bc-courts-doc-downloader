@@ -4,7 +4,6 @@ import java.util.concurrent.ExecutionException;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,16 +19,20 @@ import io.swagger.v3.oas.annotations.Parameter;
 @RestController
 public class OrdsTestController implements OrdstestApi {
 
-	@Autowired
-	OrdsDocumentLookupService service;
+	private OrdsDocumentLookupService service;
+
+	public OrdsTestController(OrdsDocumentLookupService service) {
+		this.service = service;
+	}
 
 	@Override
-	public ResponseEntity<OrdsPushResponse> ordstestPost(@Parameter(name = "FiletransferRequest") @Valid @RequestBody(required = true) FiletransferRequest filetransferRequest) {
-		
+	public ResponseEntity<OrdsPushResponse> ordstestPost(
+			@Parameter(name = "FiletransferRequest") @Valid @RequestBody(required = true) FiletransferRequest filetransferRequest) {
+
 		// Create a new Job from the request
 		Job job = new Job();
 		job.setGuid(new String(filetransferRequest.getObjGuid())); // object guid decoded from b64 at this point.
-		
+
 		ResponseEntity<OrdsPushResponse> resp = null;
 		try {
 			resp = service.getFile(job).get();
@@ -40,7 +43,8 @@ public class OrdsTestController implements OrdstestApi {
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
-		return resp;
 		
+		return resp;
+
 	}
 }

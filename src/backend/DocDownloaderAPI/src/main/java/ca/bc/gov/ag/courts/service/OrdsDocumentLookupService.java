@@ -7,7 +7,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -36,14 +35,12 @@ public class OrdsDocumentLookupService {
 
 	private final RestTemplate restTemplate;
 	
-	@Autowired
 	private AppProperties props; 
 
-	public OrdsDocumentLookupService(RestTemplateBuilder restTemplateBuilder) {
-		this.restTemplate = restTemplateBuilder
-				.build();
+	public OrdsDocumentLookupService(RestTemplateBuilder restTemplateBuilder, AppProperties props) {
+		this.restTemplate = restTemplateBuilder.build();
+		this.props = props; 
 	}
-	
 	
 	/**
 	 * Call to PUT document on NFS
