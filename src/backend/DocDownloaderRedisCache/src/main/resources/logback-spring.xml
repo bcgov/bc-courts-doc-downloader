@@ -7,8 +7,13 @@
         </encoder>
     </appender>
 
-    <if condition='isDefined("SPLUNK_URL")'>
+    <if condition='isNull("SPLUNK_URL")'>
         <then>
+            <root level="info">
+                <appender-ref ref="STDOUT"/>
+            </root>
+        </then>
+        <else>
             <appender name="splunk" class="com.splunk.logging.HttpEventCollectorLogbackAppender">
                 <url>${SPLUNK_URL}</url>
                 <token>${SPLUNK_TOKEN}</token>
@@ -25,11 +30,6 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>
                 <appender-ref ref="splunk"/>
-            </root>
-        </then>
-        <else>
-            <root level="info">
-                <appender-ref ref="STDOUT"/>
             </root>
         </else>
     </if>

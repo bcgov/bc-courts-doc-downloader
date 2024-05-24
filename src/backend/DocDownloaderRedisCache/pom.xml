@@ -21,6 +21,7 @@
         <splunk-library-javalogging.version>1.11.8</splunk-library-javalogging.version>
         <logback-classic>1.4.14</logback-classic>
         <janino>3.1.6</janino>
+        <start-class>ca.bc.gov.ag.courts.RedisCacheApplication</start-class>
     </properties>
 
     <dependencies>

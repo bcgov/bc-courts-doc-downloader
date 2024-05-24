@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -21,29 +22,36 @@ import org.springframework.data.redis.serializer.GenericToStringSerializer;
 @Configuration
 @EnableRedisRepositories(basePackages = "ca.bc.gov.ag.courts.repo")
 @PropertySource("classpath:application.properties")
-@Profile({"prod", "dev", "splunk"})
+@Profile({"dev", "splunk"})
 public class RedisConfig {
 
     Logger logger = LoggerFactory.getLogger(RedisConfig.class);
 
     private String host;
     private Integer port;
+    private String password;
 
-    public RedisConfig(@Value("${spring.redis.host}") String host, @Value("${spring.redis.port}") int port) {
+    public RedisConfig(@Value("${spring.redis.host}") String host,
+                       @Value("${spring.redis.port}") int port,
+                       @Value("${spring.redis.password}") String password) {
+
         logger.info("RedisConfig starting url: " + host + " port: " + port);
         this.host = host;
         this.port = port;
+        this.password = password;
     }
 
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
-        return new JedisConnectionFactory();
+        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
+        redisStandaloneConfiguration.setHostName(host);
+        redisStandaloneConfiguration.setPort(port);
+        redisStandaloneConfiguration.setPassword(password);
+        return new JedisConnectionFactory(redisStandaloneConfiguration);
     }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
-        jedisConnectionFactory().setHostName(host);
-        jedisConnectionFactory().setPort(port);
         final RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
         template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
