@@ -15,7 +15,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -47,13 +46,16 @@ public class MSGraphServiceImpl implements MSGraphService {
 
 	private static final Logger logger = LoggerFactory.getLogger(MSGraphServiceImpl.class);
 
-	@Autowired
-	AppProperties props;
+	private AppProperties props;
 
 	private final String emailRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
 			+ "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
 
 	private Pattern emailPattern;
+	
+	public MSGraphServiceImpl (AppProperties props) {
+		this.props = props;
+	}
 
 	@PostConstruct
 	public void init() {

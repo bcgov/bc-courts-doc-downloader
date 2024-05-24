@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,9 +17,12 @@ import ca.bc.gov.ag.courts.service.OrdsDocumentLookupService;
 public class PingController implements PingApi {
 	
 	Logger logger = LoggerFactory.getLogger(PingController.class);
+	 
+	private OrdsDocumentLookupService service; 
 	
-	@Autowired 
-	OrdsDocumentLookupService service; 
+	public PingController(OrdsDocumentLookupService service) {
+		this.service = service; 
+	}
 
 	@Override
 	public ResponseEntity<String> pingGet() {

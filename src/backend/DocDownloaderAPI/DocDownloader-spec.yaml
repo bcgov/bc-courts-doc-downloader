@@ -164,10 +164,22 @@ components:
           type: string
     msgtest_request:
       type: object
+      required:
+        - email
+        - folder
+        - fileName
+        - data
       properties:
         email:
           type: string
           description: 'The email of the OneDrive user.'
         folder:
           type: string
-          description: 'The OneDrive folder name to write the test file to.'  
+          description: 'The OneDrive folder name to write the test file to.'
+        fileName:
+          type: string
+          description: 'The name of the file to push with extension.'
+        data: 
+          type: string
+          format: byte
+          description: 'Base 64 encoded file data.'
