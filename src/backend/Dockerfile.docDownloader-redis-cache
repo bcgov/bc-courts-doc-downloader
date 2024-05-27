@@ -9,7 +9,7 @@ ARG SKIP_TESTS=false
 COPY . .
 
 RUN mvn -B clean install \
-        -P splunk \
+        -P redisCache \
         -Dmaven.test.skip=${SKIP_TESTS}
 
 #############################################################################################
@@ -25,8 +25,7 @@ RUN apk add busybox-extras
 
 EXPOSE 8080
 
-COPY --from=build ./target/${SERVICE_NAME}-*.jar /deployments/service.jar
+COPY --from=build ./${SERVICE_NAME}/target/${SERVICE_NAME}-*.jar /deployments/service.jar
 
 CMD ["java", "-jar", "/deployments/service.jar"]
-#CMD ["tail", "-f", "/dev/null"]
 #############################################################################################

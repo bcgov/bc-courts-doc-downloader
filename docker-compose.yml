@@ -39,7 +39,7 @@ services:
     container_name: docdownloader-redis-cache-client
     image: docdownloader-redis-cache
     build:
-      context: ./src/backend/DocDownloaderRedisCache
+      context: ./src/backend
       dockerfile: Dockerfile.docDownloader-redis-cache
       args:
         - SERVICE_NAME=DocDownloaderRedisCache
