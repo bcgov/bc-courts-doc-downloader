@@ -15,12 +15,11 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 import ca.bc.gov.ag.courts.config.AppProperties;
-//import lombok.RequiredArgsConstructor;
+
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-//@RequiredArgsConstructor
 public class SecurityConfiguration {
 
 	private final AppProperties props;
@@ -32,8 +31,8 @@ public class SecurityConfiguration {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(CsrfConfigurer::disable).authorizeHttpRequests((authorize) -> authorize
-				// Allow access to Swagger
-				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+				// Allow access to health endpoint
+				.requestMatchers("/actuator/**" ).permitAll()
 				// Authenticate all other requests
 				.anyRequest().authenticated())
 				// Use basic authentication (user/pass)

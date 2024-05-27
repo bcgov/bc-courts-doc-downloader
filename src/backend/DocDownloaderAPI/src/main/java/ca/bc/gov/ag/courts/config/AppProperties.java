@@ -1,11 +1,11 @@
 package ca.bc.gov.ag.courts.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-@Component
-@PropertySource("classpath:application.properties")
+@Configuration
+@ConfigurationProperties()
 public class AppProperties {
 	
 	@Value("${application.password}")
@@ -67,7 +67,6 @@ public class AppProperties {
 	
 	@Value("${msg.endpointHost}")
 	private String msgEndpointHost;
-
 
 	public String getApplicationName() {
 		return applicationName;
