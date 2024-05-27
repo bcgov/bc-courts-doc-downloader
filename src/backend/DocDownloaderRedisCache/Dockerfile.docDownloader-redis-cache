@@ -27,6 +27,6 @@ EXPOSE 8080
 
 COPY --from=build ./target/${SERVICE_NAME}-*.jar /deployments/service.jar
 
-#CMD ["java", "-jar", "/deployments/service.jar"]
-CMD ["tail", "-f", "/dev/null"]
+CMD ["java", "-jar", "/deployments/service.jar"]
+#CMD ["tail", "-f", "/dev/null"]
 #############################################################################################
