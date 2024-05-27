@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import ca.bc.gov.ag.courts.config.AppProperties;
@@ -79,7 +80,7 @@ public class AuthHelper {
 		String response = HttpClientHelper.getResponseStringFromConn(connection);
 		int responseCode = connection.getResponseCode();
 
-		if (responseCode >= 400) {
+		if (!HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
 			logger.error("Token request failure. Response: " + response);
 		} else {
 			logger.debug("Token request response: " + response);

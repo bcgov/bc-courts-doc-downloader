@@ -34,11 +34,10 @@ import jakarta.annotation.PostConstruct;
 
 
 /**
- * @author 176899
  * 
- * https://learn.microsoft.com/en-us/graph/sdks/large-file-upload?tabs=java#upload-large-file-to-onedrive
- * https://learn.microsoft.com/en-us/graph/sdks/create-client?tabs=java
- * https://stackoverflow.com/questions/45609432/how-do-i-resolve-the-error-aadsts7000218-the-request-body-must-contain-the-foll
+ * MS Graph Service methods 
+ * 
+ * @author 176899
  * 
  */
 @Service
@@ -65,7 +64,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 	/**
 	 * 
 	 * Create upload session. Only works with a token derived using OAuth2 Authorization Code flow.  (e.g., token created 
-	 * on behalf of the user).  
+	 * on behalf of the user - aka 'Delegated').  
 	 * 
 	 * @param accessToken
 	 * @param fileFolder
@@ -77,17 +76,14 @@ public class MSGraphServiceImpl implements MSGraphService {
 	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<String> createUploadSession(String accessToken, String fileFolder, String fileName) throws Exception {
 		
-		//ref: https://learn.microsoft.com/en-us/onedrive/developer/rest-api/api/driveitem_createuploadsession?view=odsp-graph-online#create-an-upload-session
-		
 		logger.debug("Calling createUploadSession...retry count: " + RetrySynchronizationManager.getContext().getRetryCount());
 		logger.debug("Processing createUploadSession asynchronously with Thread {}", Thread.currentThread().getName());
     	
-    	// Microsoft Graph user upload location
         URI uri = new URI(props.getMsgEndpointHost() + "v1.0/me/drive/root:/" + fileFolder + "/" + fileName + ":/createUploadSession");
         
         RestTemplate restTemplate = new RestTemplate();
         
-        // see https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0 regarding behavior 
+        // ref: https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0 regarding behavior 
         String jsonBody = "{\"item\":{\"@microsoft.graph.conflictBehavior\": \"replace\",\"name\": \"" + fileName + "\"}}";
         
         HttpHeaders headers = new HttpHeaders();
@@ -126,9 +122,10 @@ public class MSGraphServiceImpl implements MSGraphService {
 	/**
 	 * 
 	 * Create upload session with User Id. Only works with a token derived using OAuth2 Client Credentials flow.  (e.g., token created 
-	 * on behalf of the application (app-only as opposed to delegated)). 
+	 * on behalf of the application (e.g., none delegated)). 
 	 * 
 	 * @param accessToken
+	 * @param userId
 	 * @param fileFolder
 	 * @param fileName
 	 * @return
@@ -149,7 +146,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 
 		RestTemplate restTemplate = new RestTemplate();
 
-		// https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0 regarding behavior
+		// ref: https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0 regarding behavior
 		String jsonBody = "{\"item\":{\"@microsoft.graph.conflictBehavior\": \"replace\",\"name\": \"" + fileName + "\"}}";
 
 		HttpHeaders headers = new HttpHeaders();
@@ -215,7 +212,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 			uploadConnection.setRequestProperty("Content-Length", Integer.toString(chunk.length));
 
 			// The Content-Range header must be set for each fragment. 
-			// For example: Content-Range: bytes 0-25/128
+			// For example: Content-Range: bytes 0-25/128 for bytes 0 through 25 out of 128
 			String range = "bytes start-end/fileSize";
 
 			range = StringUtils.replace(range, "start", Integer.toString(count * fragSize));
@@ -234,9 +231,9 @@ public class MSGraphServiceImpl implements MSGraphService {
 			String response = HttpClientHelper.getResponseStringFromConn(uploadConnection);
 			int responseCode = uploadConnection.getResponseCode();
 
-			if (responseCode >= 400) {
+			if (!HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
 				logger.error("File upload chunk failure. Response: " + response);
-				throw new Exception("Unexpected 40x error."); 
+				throw new Exception("Unexpected http status code received when uploading chunk: " + responseCode); 
 			} else {
 				logger.debug("Chunk response: " + response);
 			}
@@ -244,7 +241,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response));
 
 		} catch (Exception ex) {
-			logger.error("Unexpected error at uploadChunk: " + ex.getMessage());
+			logger.error(ex.getMessage());
 			ex.printStackTrace();
 			throw ex;
 		}
@@ -252,9 +249,9 @@ public class MSGraphServiceImpl implements MSGraphService {
 	}
 	
 	/**
-	 * getUserId
+	 * getUserId from email address. 
 	 * 
-	 * App must have the following role(s) set to execute the 'users' search operation: User.Read.All 
+	 * App must have the following role(s) set to execute the 'users' search operation: User.Read.All.  
 	 * 
 	 * @param accessToken
 	 * @param email
@@ -285,11 +282,11 @@ public class MSGraphServiceImpl implements MSGraphService {
 	    int responseCode = connection.getResponseCode();
 		String response = HttpClientHelper.getResponseStringFromConn(connection);
 		
-		if (responseCode >= 300) {
+		if (!HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
 			logger.error("GetUserId failure. Response: " + response);
 			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response)); 
 		} else {
-			logger.debug("GetUserId request response: " + response);
+			logger.debug("GetUserId response: " + response);
 		}
 
 		return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response));
