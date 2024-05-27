@@ -55,6 +55,8 @@ public class AuthHelper {
      * @throws JSONException
      */
 	public CompletableFuture<JSONObject> GetAccessToken() throws MalformedURLException, IOException, JSONException {
+		
+		logger.info("AuthHelper.GetAccessToken called.");
 
 		String parameters = "client_id="
 				+ URLEncoder.encode(this.clientId, java.nio.charset.StandardCharsets.UTF_8.toString())

@@ -44,7 +44,7 @@ public class MSGraphTestController implements MsgtestApi {
 		
 		try {
 			
-			logger.debug("Initiating MS Graph file upload test for : " + msgtestRequest.getFileName());
+			logger.info("Initiating MS Graph file upload test for : " + msgtestRequest.getFileName());
 			
 			String token; 
 			
@@ -83,6 +83,7 @@ public class MSGraphTestController implements MsgtestApi {
 		} catch (Exception ex) {
 			resp.setResult("Error");
 			resp.setError(ex.getMessage());
+			logger.error(ex.getMessage());
 			return new ResponseEntity<>(resp, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
