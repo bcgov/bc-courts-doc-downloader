@@ -41,8 +41,14 @@ public class JobController {
     public ResponseEntity<Optional<Job>> getJobById(@PathVariable String id) {
 
         logger.info("get Job for id " + id + " called");
-
-        return new ResponseEntity<Optional<Job>>(repo.findById(id), HttpStatus.OK);
+        
+        Optional<Job> job = repo.findById(id);
+        
+        if (job.isEmpty()) {
+        	return new ResponseEntity<Optional<Job>>(job, HttpStatus.NOT_FOUND);
+        } else {
+        	return new ResponseEntity<Optional<Job>>(job, HttpStatus.OK);
+        }
     }
 
     @PostMapping(path = "/job", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

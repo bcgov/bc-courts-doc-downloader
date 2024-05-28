@@ -67,6 +67,15 @@ public class AppProperties {
 	
 	@Value("${msg.endpointHost}")
 	private String msgEndpointHost;
+	
+	@Value("${redis.client.host}")
+	private String redisClientHost;
+	
+	@Value("${redis.client.username}")
+	private String redisClientUsername;
+	
+	@Value("${redis.client.password}")
+	private String redisClientPassword;
 
 	public String getApplicationName() {
 		return applicationName;
@@ -228,5 +237,28 @@ public class AppProperties {
 		this.msgEndpointHost = msgEndpointHost;
 	}
 
+	public String getRedisClientHost() {
+		return redisClientHost;
+	}
+
+	public void setRedisClientHost(String redisClientHost) {
+		this.redisClientHost = redisClientHost;
+	}
+
+	public String getRedisClientUsername() {
+		return redisClientUsername;
+	}
+
+	public void setRedisClientUsername(String redisClientUsername) {
+		this.redisClientUsername = redisClientUsername;
+	}
+
+	public String getRedisClientPassword() {
+		return redisClientPassword;
+	}
+
+	public void setRedisClientPassword(String redisClientPassword) {
+		this.redisClientPassword = redisClientPassword;
+	}
 
 }
