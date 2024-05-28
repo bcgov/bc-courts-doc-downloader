@@ -35,7 +35,7 @@ public class DocumentController implements DocumentApi {
 		
 		logger.info("Heard a call to the document upload endpoint for docId: " + new String(filetransferRequest.getObjGuid()));
 		
-		//TODO 
+		//TODO - To be completed. 
 		FiletransferResponse resp = new FiletransferResponse();
 		resp.setAcknowledge(true);
 		resp.setDetail("tobedone");
@@ -51,9 +51,9 @@ public class DocumentController implements DocumentApi {
 		
 		logger.info("Heard a call to the document status endpoint for docId: " + docId);
 		
-		// TODO - This will come from Reddis
+		// TODO - Response data will come from Redis Cache. 
 		// TODO - Needs input params defined.
-		// TODO - Needs to return Job object. 
+		// TODO - Needs to return Job object if it exists. 
 		FiletransferstatusResponse resp = new FiletransferstatusResponse();
 		resp.setPercentTransfered(75);
 		resp.setFileRequestedDtm("2013-09-15T05:53:00-08:00");

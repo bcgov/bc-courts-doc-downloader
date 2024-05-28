@@ -4,12 +4,10 @@ import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -21,6 +19,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import ca.bc.gov.ag.courts.Utils.AuthHelper;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
 import ca.bc.gov.ag.courts.config.AppProperties;
 import ca.bc.gov.ag.courts.exception.DownloaderException;
@@ -75,7 +74,8 @@ public class OrdsDocumentLookupService {
 		logger.debug("Requesting file push to server with url: " + url);
 		
 		ResponseEntity<OrdsPushResponse> results = restTemplate.exchange(url, HttpMethod.GET,
-				new HttpEntity<OrdsPushResponse>(createHeaders()), OrdsPushResponse.class);
+				new HttpEntity<OrdsPushResponse>(AuthHelper.createBasicAuthHeaders(
+						props.getOrdsSsgUsername(), props.getOrdsSsgPassword())), OrdsPushResponse.class);
 
 		return CompletableFuture.completedFuture(results);
 
@@ -147,40 +147,12 @@ public class OrdsDocumentLookupService {
 		ResponseEntity<OrdsHealthResponse> resp = null;
 
 		resp = restTemplate.exchange(props.getOrdsSsgBaseUrl() + "/ping", HttpMethod.GET,
-				new HttpEntity<OrdsHealthResponse>(createHeaders()), OrdsHealthResponse.class);
+				new HttpEntity<OrdsHealthResponse>(AuthHelper.createBasicAuthHeaders(
+							props.getOrdsSsgUsername(), props.getOrdsSsgPassword())),
+					OrdsHealthResponse.class);
 
 		return CompletableFuture.completedFuture(resp);
 
 	}
-	
-	/**
-	 * 
-	 * Dispatch data to front end.
-	 * 
-	 * @param threadId
-	 * @throws URISyntaxException
-	 */
-	private void DispatchOrdsResponse(Job job) throws URISyntaxException {
-		
-		//TODO - This method needs to dispatch back to the main controller to 
-		// initiate the MS Graph calls and push the file to OneDrive. 
-		
-	}
-	
-	/**
-	 * Generates Basic Auth Header. 
-	 * 
-	 * @return
-	 */
-	private HttpHeaders createHeaders() {
-		return new HttpHeaders() {
-			private static final long serialVersionUID = -9217317753759432107L;
-			{
-				String auth = props.getOrdsSsgUsername() + ":" + props.getOrdsSsgPassword();
-				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(), false);
-				String authHeader = "Basic " + new String(encodedAuth);
-				set("Authorization", authHeader);
-			}
-		};
-	}
+
 }
