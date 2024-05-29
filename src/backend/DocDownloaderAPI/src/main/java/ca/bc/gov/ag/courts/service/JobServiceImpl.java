@@ -1,5 +1,6 @@
 package ca.bc.gov.ag.courts.service;
 
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import ca.bc.gov.ag.courts.Utils.TimeHelper;
 import ca.bc.gov.ag.courts.listener.JobEventListener;
 import ca.bc.gov.ag.courts.model.Job; 
 
@@ -32,14 +34,22 @@ public class JobServiceImpl implements JobService, JobEventListener {
         
 		logger.info("Heard a call to processDocRequest.");
 		
-		// TODO - Create the entry in Reddis (if it doesn't already exist).  
-		// TODO - Create ORDS call with (Sync) and once it completes, initiate MS Graph upload process (void return type).
-		// TODO - At every stage update Reddis with state. 
+		try {
 		
-        try {
+			// set time creation
+			job.setStartDeliveryDtm(TimeHelper.getISO8601NowDtm(new Date()));
+			
+			rService.createJob(job);
+		
+			// TODO - Create the entry in Reddis (if it doesn't already exist).  
+			// TODO - Create ORDS call with (Sync) and once it completes, initiate MS Graph upload process (void return type).
+			// TODO - At every stage update Reddis with state.
+			
             Thread.sleep(5000); // Simulating job processing time
             this.onCompletion(job); // callback
-        } catch (InterruptedException e) {
+            
+        } catch (Exception e) {
+        	
         	this.onError(job, e);
             Thread.currentThread().interrupt();
         }

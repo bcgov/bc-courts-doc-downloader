@@ -53,11 +53,11 @@ public class DocumentController implements DocumentApi {
 		job.setApplicationId(props.getOrdsApplicationId());
 		job.setOrdsTimeout(false);
 		job.setGraphTimeout(false);
-		job.setGraphSessionId(null);
+		job.setGraphSessionUrl(null);
 		job.setError(false);
 		job.setLastErrorMessage(null);
-		job.setStartDelivery("2024-01-19T19:00-07:00");
-		job.setEndDelivery(null);
+		job.setStartDeliveryDtm(null);
+		job.setEndDeliveryDtm(null);
 		job.setPercentageComplete(0);
 		job.setFileName(null); // available after ORDS call 
 		job.setMimeType(null); // available after ORDS call

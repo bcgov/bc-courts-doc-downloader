@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "correlationId", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout",
-		"graphSessionUrl", "error", "lastErrorMessage", "startDelivery", "endDelivery", "percentageComplete", "fileName",
+		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName",
 		"mimeType" })
 //@RedisHash("Job")
 @RequiredArgsConstructor
@@ -131,7 +131,7 @@ public class Job implements Serializable {
 	}
 
 	@JsonProperty("graphSessionUrl")
-	public void setGraphSessionId(String graphSessionUrl) {
+	public void setGraphSessionUrl(String graphSessionUrl) {
 		this.graphSessionUrl = graphSessionUrl;
 	}
 
@@ -155,13 +155,13 @@ public class Job implements Serializable {
 		this.lastErrorMessage = lastErrorMessage;
 	}
 
-	@JsonProperty("startDelivery")
+	@JsonProperty("startDeliveryDtm")
 	public String getStartDeliveryDtm() {
 		return startDeliveryDtm;
 	}
 
 	@JsonProperty("startDeliveryDtm")
-	public void setStartDelivery(String startDeliveryDtm) {
+	public void setStartDeliveryDtm(String startDeliveryDtm) {
 		this.startDeliveryDtm = startDeliveryDtm;
 	}
 
@@ -170,8 +170,8 @@ public class Job implements Serializable {
 		return endDeliveryDtm;
 	}
 
-	@JsonProperty("endDelivery")
-	public void setEndDelivery(String endDeliveryDtm) {
+	@JsonProperty("endDeliveryDtm")
+	public void setEndDeliveryDtm(String endDeliveryDtm) {
 		this.endDeliveryDtm = endDeliveryDtm;
 	}
 
