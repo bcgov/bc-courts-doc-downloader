@@ -17,6 +17,10 @@ import ca.bc.gov.ag.courts.api.DocumentApi;
 import ca.bc.gov.ag.courts.api.model.FiletransferRequest;
 import ca.bc.gov.ag.courts.api.model.FiletransferResponse;
 import ca.bc.gov.ag.courts.api.model.FiletransferstatusResponse;
+import ca.bc.gov.ag.courts.config.AppProperties;
+import ca.bc.gov.ag.courts.model.Job;
+import ca.bc.gov.ag.courts.service.JobService;
+import ca.bc.gov.ag.courts.service.JobServiceImpl;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
@@ -24,6 +28,14 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 public class DocumentController implements DocumentApi {
 	
 	Logger logger = LoggerFactory.getLogger(DocumentController.class);
+	
+	private final JobService jService; 
+	private final AppProperties props; 
+	
+	public DocumentController(JobServiceImpl jService, AppProperties props) {
+		this.jService = jService;
+		this.props = props; 
+	}
 	
 	@Override
 	public ResponseEntity<FiletransferResponse> documentUploadPost(
@@ -33,9 +45,25 @@ public class DocumentController implements DocumentApi {
 		
 		MDC.put("correlationid", xCorrelationId);
 		
-		logger.info("Heard a call to the document upload endpoint for docId: " + new String(filetransferRequest.getObjGuid()));
+		logger.info("Heard a call to the document upload endpoint. ");
 		
-		//TODO - To be completed. 
+		Job job = new Job();
+		job.setCorrelationId(xCorrelationId);
+		job.setGuid(new String(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
+		job.setApplicationId(props.getOrdsApplicationId());
+		job.setOrdsTimeout(false);
+		job.setGraphTimeout(false);
+		job.setGraphSessionId(null);
+		job.setError(false);
+		job.setLastErrorMessage(null);
+		job.setStartDelivery("2024-01-19T19:00-07:00");
+		job.setEndDelivery(null);
+		job.setPercentageComplete(0);
+		job.setFileName(null); // available after ORDS call 
+		job.setMimeType(null); // available after ORDS call
+		jService.processDocRequest(job);
+		
+		//TODO - To be completed 
 		FiletransferResponse resp = new FiletransferResponse();
 		resp.setAcknowledge(true);
 		resp.setDetail("tobedone");

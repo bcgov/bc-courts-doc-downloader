@@ -14,8 +14,8 @@ import lombok.RequiredArgsConstructor;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "id", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout", "checksum",
-		"graphSessionId", "error", "lastErrorMessage", "startDelivery", "endDelivery", "percentageComplete", "fileName",
+@JsonPropertyOrder({ "correlationId", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout",
+		"graphSessionUrl", "error", "lastErrorMessage", "startDelivery", "endDelivery", "percentageComplete", "fileName",
 		"mimeType" })
 //@RedisHash("Job")
 @RequiredArgsConstructor
@@ -36,8 +36,8 @@ public class Job implements Serializable {
 	 */
 	private static final long serialVersionUID = -6588653204556249341L;
 	
-	@JsonProperty("id")
-	private String id;
+	@JsonProperty("correlationId")
+	private String correlationId;
 	@JsonProperty("guid")
 	private String guid;
 	@JsonProperty("applicationId")
@@ -48,10 +48,8 @@ public class Job implements Serializable {
 	private Boolean ordsTimeout;
 	@JsonProperty("graphTimeout")
 	private Boolean graphTimeout;
-	@JsonProperty("checksum")
-	private String checksum;
-	@JsonProperty("graphSessionId")
-	private String graphSessionId;
+	@JsonProperty("graphSessionUrl")
+	private String graphSessionUrl;
 	@JsonProperty("error")
 	private Boolean error;
 	@JsonProperty("lastErrorMessage")
@@ -67,14 +65,14 @@ public class Job implements Serializable {
 	@JsonProperty("mimeType")
 	private String mimeType;
 	
-	@JsonProperty("id")
-	public String getId() {
-		return id;
+	@JsonProperty("correlationId")
+	public String getCorrelationId() {
+		return correlationId;
 	}
 
-	@JsonProperty("id")
-	public void setId(String id) {
-		this.id = id;
+	@JsonProperty("correlationId")
+	public void setCorrelationId(String correlationId) {
+		this.correlationId = correlationId;
 	}
 
 	@JsonProperty("guid")
@@ -127,24 +125,14 @@ public class Job implements Serializable {
 		this.graphTimeout = graphTimeout;
 	}
 
-	@JsonProperty("checksum")
-	public String getChecksum() {
-		return checksum;
+	@JsonProperty("graphSessionUrl")
+	public String getGraphSessionUrl() {
+		return graphSessionUrl;
 	}
 
-	@JsonProperty("checksum")
-	public void setChecksum(String checksum) {
-		this.checksum = checksum;
-	}
-
-	@JsonProperty("graphSessionId")
-	public String getGraphSessionId() {
-		return graphSessionId;
-	}
-
-	@JsonProperty("graphSessionId")
-	public void setGraphSessionId(String graphSessionId) {
-		this.graphSessionId = graphSessionId;
+	@JsonProperty("graphSessionUrl")
+	public void setGraphSessionId(String graphSessionUrl) {
+		this.graphSessionUrl = graphSessionUrl;
 	}
 
 	@JsonProperty("error")
@@ -219,9 +207,9 @@ public class Job implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId + ", putId=" + putId
-				+ ", ordsTimeout=" + ordsTimeout + ", graphTimeout=" + graphTimeout + ", checksum=" + checksum
-				+ ", graphSessionId=" + graphSessionId + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
+		return "Job [correlationId=" + correlationId + ", guid=" + guid + ", applicationId=" + applicationId + ", putId=" + putId
+				+ ", ordsTimeout=" + ordsTimeout + ", graphTimeout=" + graphTimeout
+				+ ", graphSessionUrl=" + graphSessionUrl + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
 				+ ", startDeliveryDtm=" + startDeliveryDtm + ", endDeliveryDtm=" + endDeliveryDtm
 				+ ", percentageComplete=" + percentageComplete + ", fileName=" + fileName + ", mimeType=" + mimeType
 				+ "]";

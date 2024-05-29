@@ -51,12 +51,11 @@ public class RedisCacheClientTestController {
 	public ResponseEntity<String> createJob() throws Exception {
 		
 		Job job = new Job();
-		job.setId("123456");
+		job.setCorrelationId("123456");
 		job.setGuid("79278979237492");
 		job.setApplicationId("CeisCso");
 		job.setOrdsTimeout(false);
 		job.setGraphTimeout(false);
-		job.setChecksum("6776DF");
 		job.setGraphSessionId("8623846823");
 		job.setError(false);
 		job.setLastErrorMessage(null);
@@ -74,12 +73,11 @@ public class RedisCacheClientTestController {
 	public ResponseEntity<String> updateJob() throws Exception {
 		
 		Job job = new Job();
-		job.setId("123456");
+		job.setCorrelationId("123456");
 		job.setGuid("79278979237492");
 		job.setApplicationId("CeisCso");
 		job.setOrdsTimeout(false);
 		job.setGraphTimeout(false);
-		job.setChecksum("6776DF");
 		job.setGraphSessionId("8623846823");
 		job.setError(false);
 		job.setLastErrorMessage(null);
