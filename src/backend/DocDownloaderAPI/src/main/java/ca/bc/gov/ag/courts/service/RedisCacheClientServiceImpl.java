@@ -12,7 +12,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,7 +43,6 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	}
 	
 	@Override
-	@Async
 	public CompletableFuture<ResponseEntity<Job[]>> getJobs() throws Exception {
 
 		logger.info("RCC Calling getJobs...");
@@ -59,7 +57,6 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	}
 	
 	@Override
-	@Async
 	public CompletableFuture<ResponseEntity<Job>> getJob(String jobId) throws Exception {
 		
 		logger.info("RCC Calling getJob for jobId: " + jobId);
@@ -74,10 +71,10 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	}
 
 	@Override
-	@Async
 	public CompletableFuture<ResponseEntity<String>> createJob(Job job) throws Exception {
 		
 		logger.info("RCC: Calling createJob...");
+		System.out.println(job);
 		URI uri = new URI(props.getRedisClientHost() + "job");
 
 		HttpEntity<Job> entity = new HttpEntity<Job>(job,
@@ -89,7 +86,6 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	}
 
 	@Override
-	@Async
 	public CompletableFuture<ResponseEntity<String>> updateJob(Job job) throws Exception {
 		
 		logger.info("RCC: Calling updateJob...");
@@ -104,7 +100,6 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	}
 
 	@Override
-	@Async
 	public CompletableFuture<ResponseEntity<String>> deleteJob(String jobId) throws Exception {
 		
 		/**

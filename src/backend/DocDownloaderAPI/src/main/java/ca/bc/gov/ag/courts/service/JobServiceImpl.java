@@ -41,7 +41,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			
 			rService.createJob(job);
 		
-			// TODO - Create the entry in Reddis (if it doesn't already exist).  
+			// TODO - Update Redis Cache Client with latest job model.   
 			// TODO - Create ORDS call with (Sync) and once it completes, initiate MS Graph upload process (void return type).
 			// TODO - At every stage update Reddis with state.
 			
