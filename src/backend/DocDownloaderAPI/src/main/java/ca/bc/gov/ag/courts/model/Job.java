@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "correlationId", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout",
+@JsonPropertyOrder({ "id", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout",
 		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName",
 		"mimeType" })
 //@RedisHash("Job")
@@ -36,8 +36,8 @@ public class Job implements Serializable {
 	 */
 	private static final long serialVersionUID = -6588653204556249341L;
 	
-	@JsonProperty("correlationId")
-	private String correlationId;
+	@JsonProperty("id")
+	private String id;
 	@JsonProperty("guid")
 	private String guid;
 	@JsonProperty("applicationId")
@@ -65,14 +65,14 @@ public class Job implements Serializable {
 	@JsonProperty("mimeType")
 	private String mimeType;
 	
-	@JsonProperty("correlationId")
-	public String getCorrelationId() {
-		return correlationId;
+	@JsonProperty("id")
+	public String getId() {
+		return id;
 	}
 
-	@JsonProperty("correlationId")
-	public void setCorrelationId(String correlationId) {
-		this.correlationId = correlationId;
+	@JsonProperty("id")
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	@JsonProperty("guid")
@@ -207,7 +207,7 @@ public class Job implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Job [correlationId=" + correlationId + ", guid=" + guid + ", applicationId=" + applicationId + ", putId=" + putId
+		return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId + ", putId=" + putId
 				+ ", ordsTimeout=" + ordsTimeout + ", graphTimeout=" + graphTimeout
 				+ ", graphSessionUrl=" + graphSessionUrl + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
 				+ ", startDeliveryDtm=" + startDeliveryDtm + ", endDeliveryDtm=" + endDeliveryDtm

@@ -51,7 +51,7 @@ public class RedisCacheClientTestController {
 	public ResponseEntity<String> createJob() throws Exception {
 		
 		Job job = new Job();
-		job.setCorrelationId("123456");
+		job.setId("123456");
 		job.setGuid("79278979237492");
 		job.setApplicationId("CeisCso");
 		job.setOrdsTimeout(false);
@@ -73,7 +73,7 @@ public class RedisCacheClientTestController {
 	public ResponseEntity<String> updateJob() throws Exception {
 		
 		Job job = new Job();
-		job.setCorrelationId("123456");
+		job.setId("123456");
 		job.setGuid("79278979237492");
 		job.setApplicationId("CeisCso");
 		job.setOrdsTimeout(false);

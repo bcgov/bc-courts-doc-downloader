@@ -48,7 +48,7 @@ public class DocumentController implements DocumentApi {
 		logger.info("Heard a call to the document upload endpoint. ");
 		
 		Job job = new Job();
-		job.setCorrelationId(xCorrelationId);
+		job.setId(xCorrelationId);
 		job.setGuid(new String(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
 		job.setApplicationId(props.getOrdsApplicationId());
 		job.setOrdsTimeout(false);

@@ -89,11 +89,11 @@ public class JobServiceImpl implements JobService, JobEventListener {
 
 	@Override
 	public void onCompletion(Job job) {
-		System.out.println("Job completed for correlationId: " + job.getCorrelationId());
+		System.out.println("Job completed for correlationId: " + job.getId());
 	}
 
 	@Override
 	public void onError(Job job, Throwable ex) {
-		System.out.println("Job errored for correlationId: " + job.getCorrelationId() + ", Error: " + ex.getMessage());
+		System.out.println("Job errored for correlationId: " + job.getId() + ", Error: " + ex.getMessage());
 	}
 }
