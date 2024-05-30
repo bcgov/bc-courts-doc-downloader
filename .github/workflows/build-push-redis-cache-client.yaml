@@ -89,7 +89,7 @@ jobs:
 
           git add .
           
-          git commit -m "Update Dev API image tag"
+          git commit -m "Update Dev Redis Cache Client image tag"
           git push origin develop  # Update the branch name as needed
 
       - uses: fabasoad/data-format-converter-action@v0
