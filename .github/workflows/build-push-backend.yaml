@@ -36,12 +36,12 @@ jobs:
         working-directory: ${{env.WORKING_DIRECTORY}}
         run: |      
           docker compose build docdownloader-api
-          docker tag docdownloader-api artifacts.developer.gov.bc.ca/sdc2-docdownloader-api/${{ env.IMAGE_NAME }}:${{ env.TAG_VERSION }}
+          docker tag docdownloader-api artifacts.developer.gov.bc.ca/sdc2-docdownloader-api/${{ env.IMAGE_NAME }}:${{ env.TAG_VERSION }}-${{ steps.short_sha.outputs.SHORT_SHA }}
           
       - name: Docker Push to Artifactory
         id: publish
         run: |
-          docker push artifacts.developer.gov.bc.ca/sdc2-docdownloader-api/${{ env.IMAGE_NAME }}:${{ env.TAG_VERSION }}
+          docker push artifacts.developer.gov.bc.ca/sdc2-docdownloader-api/${{ env.IMAGE_NAME }}:${{ env.TAG_VERSION }}-${{ steps.short_sha.outputs.SHORT_SHA }}
       
       - name: Checkout ArgoCD Repo
         id: gitops
@@ -64,9 +64,9 @@ jobs:
           # Update the Helm values file with the new image tag and version
           DATETIME=$(date +'%Y-%m-%d %H:%M:%S')  # Get current date and time
 
-          sed -i "s/apitag: .*/apitag: ${{ env.TAG_VERSION }} # Image Updated on $DATETIME/" ../deploy/dev_values.yaml
+          sed -i "s/apitag: .*/apitag: ${{ env.TAG_VERSION }}-${{ steps.short_sha.outputs.SHORT_SHA }} # Image Updated on $DATETIME/" ../deploy/dev_values.yaml
 
-          sed -i "s/apitag: .*/apitag: ${{ env.TAG_VERSION }} # Image Updated on $DATETIME/" docdownloader-api/values.yaml
+          sed -i "s/apitag: .*/apitag: ${{ env.TAG_VERSION }}-${{ steps.short_sha.outputs.SHORT_SHA }} # Image Updated on $DATETIME/" docdownloader-api/values.yaml
           
           # Commit and push the changes
           git config --global user.email "actions@github.com"
