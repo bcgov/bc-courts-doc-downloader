@@ -24,4 +24,5 @@ public interface RedisCacheClientService {
 	public CompletableFuture<ResponseEntity<String>> createJob(Job job) throws Exception;
 	public CompletableFuture<ResponseEntity<String>> updateJob(Job job) throws Exception;
 	public CompletableFuture<ResponseEntity<String>> deleteJob(String jobId) throws Exception;
+	public boolean jobExists(String jobId);
 }

@@ -1,5 +1,7 @@
 package ca.bc.gov.ag.courts.controller;
 
+import java.util.concurrent.CompletableFuture;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
@@ -21,6 +23,7 @@ import ca.bc.gov.ag.courts.config.AppProperties;
 import ca.bc.gov.ag.courts.model.Job;
 import ca.bc.gov.ag.courts.service.JobService;
 import ca.bc.gov.ag.courts.service.JobServiceImpl;
+import ca.bc.gov.ag.courts.service.RedisCacheClientService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
@@ -30,10 +33,12 @@ public class DocumentController implements DocumentApi {
 	Logger logger = LoggerFactory.getLogger(DocumentController.class);
 	
 	private final JobService jService; 
-	private final AppProperties props; 
+	private final AppProperties props;
+	private final RedisCacheClientService rService;
 	
-	public DocumentController(JobServiceImpl jService, AppProperties props) {
+	public DocumentController(JobServiceImpl jService, RedisCacheClientService rService, AppProperties props) {
 		this.jService = jService;
+		this.rService = rService; 
 		this.props = props; 
 	}
 	
@@ -43,12 +48,22 @@ public class DocumentController implements DocumentApi {
 	        @Parameter(name = "FiletransferRequest", description = "") @Valid @RequestBody(required = false) FiletransferRequest filetransferRequest
 	    ) {
 		
+		FiletransferResponse resp = new FiletransferResponse();
+		
 		MDC.put("correlationid", xCorrelationId);
 		
 		logger.info("Heard a call to the document upload endpoint. ");
 		
+		// Check if correlationId (jobId) already exists
+		if (rService.jobExists(xCorrelationId)) {
+			logger.warn("Requested job, " + xCorrelationId + " already exists. Job not created.");
+			resp.setAcknowledge(true);
+			resp.setDetail("Job already Exists: " + xCorrelationId);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
+		}
+		
 		Job job = new Job();
-		job.setId(xCorrelationId);
+		job.setId(xCorrelationId); // note mapping here. 
 		job.setGuid(new String(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
 		job.setApplicationId(props.getOrdsApplicationId());
 		job.setOrdsTimeout(false);
@@ -61,12 +76,13 @@ public class DocumentController implements DocumentApi {
 		job.setPercentageComplete(0);
 		job.setFileName(null); // available after ORDS call 
 		job.setMimeType(null); // available after ORDS call
-		jService.processDocRequest(job);
+		
+		jService.processDocRequest(job); // trip of the processing in this async thread. 
 		
 		//TODO - To be completed 
-		FiletransferResponse resp = new FiletransferResponse();
+		//FiletransferResponse resp = new FiletransferResponse();
 		resp.setAcknowledge(true);
-		resp.setDetail("tobedone");
+		resp.setDetail("Job Created");
 		
 		MDC.remove("correlationid");
 		

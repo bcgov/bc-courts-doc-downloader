@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -116,5 +117,27 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 
 		return CompletableFuture.completedFuture(responseEntity);
 		
+	}
+
+	/**
+	 * 
+	 * Test to determine if jobId already exists
+	 *  
+	 */
+	@Override
+	public boolean jobExists(String jobId) {
+		
+		ResponseEntity<Job> jobTest;
+		try {
+			CompletableFuture<ResponseEntity<Job>> j = this.getJob(jobId);
+			jobTest = j.get();
+			if (jobTest.getStatusCode() == HttpStatus.NOT_FOUND) {
+				return false; 
+			} else {
+				return true;
+			}
+		} catch (Exception e) {
+			return false; 
+		}
 	}
 }

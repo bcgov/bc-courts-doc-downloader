@@ -37,7 +37,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		try {
 		
 			// set time creation
-			job.setStartDeliveryDtm(TimeHelper.getISO8601NowDtm(new Date()));
+			job.setStartDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
 			
 			rService.createJob(job);
 		
@@ -46,11 +46,11 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			// TODO - At every stage update Reddis with state.
 			
             Thread.sleep(5000); // Simulating job processing time
-            this.onCompletion(job); // callback
+            this.onCompletion(job); // success callback
             
         } catch (Exception e) {
         	
-        	this.onError(job, e);
+        	this.onError(job, e);  // error callback
             Thread.currentThread().interrupt();
         }
     }
