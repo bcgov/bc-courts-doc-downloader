@@ -66,6 +66,7 @@ public class DocumentController implements DocumentApi {
 		job.setId(xCorrelationId); // note mapping here. 
 		job.setGuid(new String(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
 		job.setApplicationId(props.getOrdsApplicationId());
+		job.setPutId(props.getOrdsPutId());
 		job.setOrdsTimeout(false);
 		job.setGraphTimeout(false);
 		job.setGraphSessionUrl(null);
@@ -80,7 +81,6 @@ public class DocumentController implements DocumentApi {
 		jService.processDocRequest(job); // trip of the processing in this async thread. 
 		
 		//TODO - To be completed 
-		//FiletransferResponse resp = new FiletransferResponse();
 		resp.setAcknowledge(true);
 		resp.setDetail("Job Created");
 		

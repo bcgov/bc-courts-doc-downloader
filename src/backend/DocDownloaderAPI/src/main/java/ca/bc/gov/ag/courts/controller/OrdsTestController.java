@@ -13,15 +13,15 @@ import ca.bc.gov.ag.courts.api.model.FiletransferRequest;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
 import ca.bc.gov.ag.courts.exception.DownloaderException;
 import ca.bc.gov.ag.courts.model.Job;
-import ca.bc.gov.ag.courts.service.OrdsDocumentLookupService;
+import ca.bc.gov.ag.courts.service.OrdsDocumentService;
 import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 public class OrdsTestController implements OrdstestApi {
 
-	private OrdsDocumentLookupService service;
+	private OrdsDocumentService service;
 
-	public OrdsTestController(OrdsDocumentLookupService service) {
+	public OrdsTestController(OrdsDocumentService service) {
 		this.service = service;
 	}
 
@@ -35,7 +35,7 @@ public class OrdsTestController implements OrdstestApi {
 
 		ResponseEntity<OrdsPushResponse> resp = null;
 		try {
-			resp = service.getFile(job).get();
+			resp = service.pushFile(job).get();
 		} catch (DownloaderException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
