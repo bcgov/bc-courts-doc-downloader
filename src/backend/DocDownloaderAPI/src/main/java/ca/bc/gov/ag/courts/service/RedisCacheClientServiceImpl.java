@@ -4,6 +4,7 @@
 package ca.bc.gov.ag.courts.service;
 
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
@@ -17,9 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import ca.bc.gov.ag.courts.Utils.AuthHelper;
+import ca.bc.gov.ag.courts.Utils.InetUtils;
 import ca.bc.gov.ag.courts.config.AppProperties;
 import ca.bc.gov.ag.courts.handler.RedisClientResponseErrorHandler;
 import ca.bc.gov.ag.courts.model.Job;
+import jakarta.annotation.PostConstruct;
 
 
 /**
@@ -35,6 +38,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	
 	private final RestTemplate restTemplate;
 	private final AppProperties props; 
+	private String redisUrl;
 	
 	public RedisCacheClientServiceImpl(RestTemplateBuilder restTemplateBuilder, AppProperties props) {
 		this.restTemplate = restTemplateBuilder
@@ -43,11 +47,18 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 		this.props = props; 
 	}
 	
+	@PostConstruct
+	public void init() throws UnknownHostException {
+		redisUrl = "http://" + InetUtils.getIPForHostname(props.getRedisClientHost()) + ":" + props.getRedisClientPort() + "/";
+		logger.info("Resolved redis client as " + redisUrl);
+	}
+	
+	
 	@Override
 	public CompletableFuture<ResponseEntity<Job[]>> getJobs() throws Exception {
 
 		logger.info("RCC Calling getJobs...");
-		URI uri = new URI(props.getRedisClientHost() + "jobs");
+		URI uri = new URI(this.redisUrl + "jobs");
 
 		HttpEntity<String> entity = new HttpEntity<String>(
 				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));
@@ -61,7 +72,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	public CompletableFuture<ResponseEntity<Job>> getJob(String jobId) throws Exception {
 		
 		logger.info("RCC Calling getJob for jobId: " + jobId);
-		URI uri = new URI(props.getRedisClientHost() + "jobs/" + jobId);
+		URI uri = new URI(this.redisUrl + "jobs/" + jobId);
 
 		HttpEntity<String> entity = new HttpEntity<String>(
 				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));
@@ -76,7 +87,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 		
 		logger.info("RCC: Calling createJob...");
 		System.out.println(job);
-		URI uri = new URI(props.getRedisClientHost() + "job");
+		URI uri = new URI(this.redisUrl + "job");
 
 		HttpEntity<Job> entity = new HttpEntity<Job>(job,
 				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));
@@ -90,7 +101,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	public CompletableFuture<ResponseEntity<String>> updateJob(Job job) throws Exception {
 		
 		logger.info("RCC: Calling updateJob...");
-		URI uri = new URI(props.getRedisClientHost() + "job");
+		URI uri = new URI(this.redisUrl + "job");
 
 		HttpEntity<Job> entity = new HttpEntity<Job>(job,
 				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));
@@ -108,7 +119,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 		 */
 		
 		logger.info("RCC: Calling deleteJob...");
-		URI uri = new URI(props.getRedisClientHost() + "job/" + jobId);
+		URI uri = new URI(this.redisUrl + "job/" + jobId);
 
 		HttpEntity<Job> entity = new HttpEntity<Job>(
 				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));

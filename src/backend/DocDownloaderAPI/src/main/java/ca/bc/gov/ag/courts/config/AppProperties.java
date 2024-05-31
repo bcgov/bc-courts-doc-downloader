@@ -71,6 +71,9 @@ public class AppProperties {
 	@Value("${redis.client.host}")
 	private String redisClientHost;
 	
+	@Value("${redis.client.port}")
+	private String redisClientPort;
+	
 	@Value("${redis.client.username}")
 	private String redisClientUsername;
 	
@@ -243,6 +246,14 @@ public class AppProperties {
 
 	public void setRedisClientHost(String redisClientHost) {
 		this.redisClientHost = redisClientHost;
+	}
+
+	public String getRedisClientPort() {
+		return redisClientPort;
+	}
+
+	public void setRedisClientPort(String redisClientPort) {
+		this.redisClientPort = redisClientPort;
 	}
 
 	public String getRedisClientUsername() {
