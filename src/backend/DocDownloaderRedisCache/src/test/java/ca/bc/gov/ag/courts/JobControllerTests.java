@@ -92,12 +92,11 @@ class JobControllerTests {
         job.setPutId("SCV");
         job.setOrdsTimeout(false);
         job.setGraphTimeout(false);
-        job.setChecksum("56112BF23");
-        job.setGraphSessionId("78900011");
+        job.setGraphSessionUrl("http://mysite.com");
         job.setError(false);
         job.setLastErrorMessage("wow");
-        job.setStartDelivery("2024-01-19T19:00-07:00");
-        job.setEndDelivery(null);
+        job.setStartDeliveryDtm("2024-01-19T19:00-07:00");
+        job.setEndDeliveryDtm(null);
         job.setPercentageComplete(65);
         job.setFileName("TEST_3M.pdf");
         job.setMimeType("application/pdf");

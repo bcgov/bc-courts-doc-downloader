@@ -11,16 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ca.bc.gov.ag.courts.api.PingApi;
 import ca.bc.gov.ag.courts.model.OrdsHealthResponse;
-import ca.bc.gov.ag.courts.service.OrdsDocumentLookupService;
+import ca.bc.gov.ag.courts.service.OrdsDocumentService;
 
 @RestController
 public class PingController implements PingApi {
 	
 	Logger logger = LoggerFactory.getLogger(PingController.class);
 	 
-	private OrdsDocumentLookupService service; 
+	private OrdsDocumentService service; 
 	
-	public PingController(OrdsDocumentLookupService service) {
+	public PingController(OrdsDocumentService service) {
 		this.service = service; 
 	}
 
@@ -29,7 +29,7 @@ public class PingController implements PingApi {
 		
 		logger.info("Heard a call to the Ping controller.");
 
-		CompletableFuture<ResponseEntity<OrdsHealthResponse>> future = service.GetOrdsHealth();
+		CompletableFuture<ResponseEntity<OrdsHealthResponse>> future = service.getOrdsHealth();
 
 		String response = "Unknown Response";
 		ResponseEntity<OrdsHealthResponse> _resp;

@@ -12,17 +12,17 @@ public class JobValidator {
 
     public static void validateJobDates(Job job) {
         try {
-            if (job.getStartDelivery() != null) {
-                String startDelivery = job.getStartDelivery();
-                DateTimeFormatter.ISO_DATE_TIME.parse(startDelivery);
-                if (!DATE_FORMAT_PATTERN.matcher(startDelivery).matches()) {
+            if (job.getStartDeliveryDtm() != null) {
+                String startDeliveryDtm = job.getStartDeliveryDtm();
+                DateTimeFormatter.ISO_DATE_TIME.parse(startDeliveryDtm);
+                if (!DATE_FORMAT_PATTERN.matcher(startDeliveryDtm).matches()) {
                     throw new IllegalArgumentException(DATE_FORMAT_ERROR);
                 }
             }
-            if (job.getEndDelivery() != null) {
-                String endDelivery = job.getEndDelivery();
-                DateTimeFormatter.ISO_DATE_TIME.parse(endDelivery);
-                if (!DATE_FORMAT_PATTERN.matcher(endDelivery).matches()) {
+            if (job.getEndDeliveryDtm() != null) {
+                String endDeliveryDtm = job.getEndDeliveryDtm();
+                DateTimeFormatter.ISO_DATE_TIME.parse(endDeliveryDtm);
+                if (!DATE_FORMAT_PATTERN.matcher(endDeliveryDtm).matches()) {
                     throw new IllegalArgumentException(DATE_FORMAT_ERROR);
                 }
             }

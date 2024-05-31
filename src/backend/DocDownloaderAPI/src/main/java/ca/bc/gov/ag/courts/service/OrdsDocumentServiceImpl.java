@@ -26,17 +26,23 @@ import ca.bc.gov.ag.courts.exception.DownloaderException;
 import ca.bc.gov.ag.courts.model.Job;
 import ca.bc.gov.ag.courts.model.OrdsHealthResponse;
 
-
+/**
+ * 
+ * Ords Document Service 
+ * 
+ * @author 176899
+ * 
+ */
 @Service
-public class OrdsDocumentLookupService {
+public class OrdsDocumentServiceImpl implements OrdsDocumentService {
 
-	private static final Logger logger = LoggerFactory.getLogger(OrdsDocumentLookupService.class);
+	private static final Logger logger = LoggerFactory.getLogger(OrdsDocumentServiceImpl.class);
 
 	private final RestTemplate restTemplate;
 	
 	private AppProperties props; 
 
-	public OrdsDocumentLookupService(RestTemplateBuilder restTemplateBuilder, AppProperties props) {
+	public OrdsDocumentServiceImpl(RestTemplateBuilder restTemplateBuilder, AppProperties props) {
 		this.restTemplate = restTemplateBuilder.build();
 		this.props = props; 
 	}
@@ -49,9 +55,11 @@ public class OrdsDocumentLookupService {
 	 * @throws DownloaderException
 	 */
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
-	public CompletableFuture<ResponseEntity<OrdsPushResponse>> getFile(Job job) throws DownloaderException {
+	public CompletableFuture<ResponseEntity<OrdsPushResponse>> pushFile(Job job) throws DownloaderException {
 
 		logger.info("Calling ORDS getFile...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+		
+		//TODO - Take the PutId out of the job. It's already available from the props. 
 		
 		URIBuilder builder;
 		try {
@@ -80,67 +88,11 @@ public class OrdsDocumentLookupService {
 		return CompletableFuture.completedFuture(results);
 
 	}
-
-// Keep this code in the event we need to batch process calls from the front end. 	
-//	@Async
-//	public void SendOrdsGetDocumentRequests(List<Job> jobs) throws URISyntaxException {
-//		
-//		String appTicket = null; 
-//		
-//		// Calls initialize first for the upcoming document request, async. 
-//		for(Job job: jobs) {
-//			try {
-//				
-//				MDC.put("threadId", job.getThreadId());
-//				
-//				job.setStarttime(System.currentTimeMillis());
-//				CompletableFuture<ResponseEntity<InitializeResponse>> future = this.initializeNFSDocument(job);
-//				future.get(); // wait for the thread to complete.
-//				appTicket = future.get().getBody().getAppTicket();
-//				job.setPercentageComplete("50");
-//				job.setEndInitTime(System.currentTimeMillis());
-//				DispatchOrdsResponse(job); // dispatch first half of request (init). 
-//				
-//				try { 
-//					CompletableFuture<ResponseEntity<GetFileResponse>> future2 = this.getFile(job, appTicket);
-//					ResponseEntity<GetFileResponse> _resp = future2.get();
-//					job.setEndGetDocTime(System.currentTimeMillis());
-//					job.setFileName(_resp.getBody().getFilename());
-//					job.setMimeType(_resp.getBody().getMimeType());
-//					logger.info("File name returned was " + _resp.getBody().getFilename());
-//					job.setPercentageComplete("100");
-//	
-//				} catch (Exception e) {	
-//					job.setEndGetDocTime(System.currentTimeMillis());
-//					job.setError(true); // triggers error progress indicator bar.
-//					job.setPercentageComplete("100");
-//					String msg = "Error received when sending get document request. Error: " + e.getMessage();
-//					job.setErrorMessage(msg);
-//					logger.error(msg);
-//					e.printStackTrace();
-//				}
-//				
-//			} catch (Exception e) {	
-//				job.setEndInitTime(System.currentTimeMillis());
-//				job.setError(true); // triggers error progress indicator bar.
-//				job.setPercentageComplete("100");
-//				String msg = "Error received when sending initialize. Error: " + e.getMessage();
-//				job.setErrorMessage(msg);
-//				logger.error(msg);
-//				e.printStackTrace();
-//			} finally {
-//				MDC.clear();
-//			}
-//			
-//			DispatchOrdsResponse(job); // dispatch second half of request (getPOCFile).
-//		}
-//		
-//	}
 	
 	@Async
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", 
 		backoff = @Backoff(delayExpression = "${application.net.delay}"))
-	public CompletableFuture<ResponseEntity<OrdsHealthResponse>> GetOrdsHealth() throws HttpClientErrorException {
+	public CompletableFuture<ResponseEntity<OrdsHealthResponse>> getOrdsHealth() throws HttpClientErrorException {
 
 		logger.info("Calling ORDS (Health Ping)...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
 

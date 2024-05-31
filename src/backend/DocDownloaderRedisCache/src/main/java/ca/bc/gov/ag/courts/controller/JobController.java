@@ -57,7 +57,7 @@ public class JobController {
         logger.info("Add Job called. Job being added to the repo: " + job.toString());
 
         if (repo.findById(job.getId()).isPresent())
-            new IllegalArgumentException("Job already exists for id: " + job.getId());
+            new IllegalArgumentException("Job already exists for Id: " + job.getId());
 
         JobValidator.validateJobDates(job);
 
@@ -71,7 +71,7 @@ public class JobController {
 
         logger.info("Update Job called. Job being updated is : " + job.toString());
 
-        repo.findById(job.getId()).orElseThrow(() -> new IllegalArgumentException("Job not found for id: " + job.getId()));
+        repo.findById(job.getId()).orElseThrow(() -> new IllegalArgumentException("Job not found for Id: " + job.getId()));
 
         JobValidator.validateJobDates(job);
 

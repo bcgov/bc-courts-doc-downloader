@@ -14,8 +14,8 @@ import lombok.RequiredArgsConstructor;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "id", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout", "checksum",
-		"graphSessionId", "error", "lastErrorMessage", "startDelivery", "endDelivery", "percentageComplete", "fileName",
+@JsonPropertyOrder({ "id", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout",
+		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName",
 		"mimeType" })
 //@RedisHash("Job")
 @RequiredArgsConstructor
@@ -48,10 +48,8 @@ public class Job implements Serializable {
 	private Boolean ordsTimeout;
 	@JsonProperty("graphTimeout")
 	private Boolean graphTimeout;
-	@JsonProperty("checksum")
-	private String checksum;
-	@JsonProperty("graphSessionId")
-	private String graphSessionId;
+	@JsonProperty("graphSessionUrl")
+	private String graphSessionUrl;
 	@JsonProperty("error")
 	private Boolean error;
 	@JsonProperty("lastErrorMessage")
@@ -127,24 +125,14 @@ public class Job implements Serializable {
 		this.graphTimeout = graphTimeout;
 	}
 
-	@JsonProperty("checksum")
-	public String getChecksum() {
-		return checksum;
+	@JsonProperty("graphSessionUrl")
+	public String getGraphSessionUrl() {
+		return graphSessionUrl;
 	}
 
-	@JsonProperty("checksum")
-	public void setChecksum(String checksum) {
-		this.checksum = checksum;
-	}
-
-	@JsonProperty("graphSessionId")
-	public String getGraphSessionId() {
-		return graphSessionId;
-	}
-
-	@JsonProperty("graphSessionId")
-	public void setGraphSessionId(String graphSessionId) {
-		this.graphSessionId = graphSessionId;
+	@JsonProperty("graphSessionUrl")
+	public void setGraphSessionUrl(String graphSessionUrl) {
+		this.graphSessionUrl = graphSessionUrl;
 	}
 
 	@JsonProperty("error")
@@ -167,13 +155,13 @@ public class Job implements Serializable {
 		this.lastErrorMessage = lastErrorMessage;
 	}
 
-	@JsonProperty("startDelivery")
+	@JsonProperty("startDeliveryDtm")
 	public String getStartDeliveryDtm() {
 		return startDeliveryDtm;
 	}
 
 	@JsonProperty("startDeliveryDtm")
-	public void setStartDelivery(String startDeliveryDtm) {
+	public void setStartDeliveryDtm(String startDeliveryDtm) {
 		this.startDeliveryDtm = startDeliveryDtm;
 	}
 
@@ -182,8 +170,8 @@ public class Job implements Serializable {
 		return endDeliveryDtm;
 	}
 
-	@JsonProperty("endDelivery")
-	public void setEndDelivery(String endDeliveryDtm) {
+	@JsonProperty("endDeliveryDtm")
+	public void setEndDeliveryDtm(String endDeliveryDtm) {
 		this.endDeliveryDtm = endDeliveryDtm;
 	}
 
@@ -220,8 +208,8 @@ public class Job implements Serializable {
 	@Override
 	public String toString() {
 		return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId + ", putId=" + putId
-				+ ", ordsTimeout=" + ordsTimeout + ", graphTimeout=" + graphTimeout + ", checksum=" + checksum
-				+ ", graphSessionId=" + graphSessionId + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
+				+ ", ordsTimeout=" + ordsTimeout + ", graphTimeout=" + graphTimeout
+				+ ", graphSessionUrl=" + graphSessionUrl + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
 				+ ", startDeliveryDtm=" + startDeliveryDtm + ", endDeliveryDtm=" + endDeliveryDtm
 				+ ", percentageComplete=" + percentageComplete + ", fileName=" + fileName + ", mimeType=" + mimeType
 				+ "]";
