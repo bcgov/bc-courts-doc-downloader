@@ -115,9 +115,7 @@ components:
     filetransfer_response:
       type: object
       properties:
-        acknowledge:
-          type: boolean
-        detail: 
+        result:
           type: string
     filetransferstatus_response:
       type: object

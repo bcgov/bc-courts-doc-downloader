@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "id", "guid", "applicationId", "putId", "ordsTimeout", "graphTimeout",
+@JsonPropertyOrder({ "id", "guid", "applicationId", "ordsTimeout", "graphTimeout",
 		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName",
 		"mimeType" })
 //@RedisHash("Job")
@@ -42,12 +42,6 @@ public class Job implements Serializable {
 	private String guid;
 	@JsonProperty("applicationId")
 	private String applicationId;
-	@JsonProperty("putId")
-	private String putId;
-	@JsonProperty("ordsTimeout")
-	private Boolean ordsTimeout;
-	@JsonProperty("graphTimeout")
-	private Boolean graphTimeout;
 	@JsonProperty("graphSessionUrl")
 	private String graphSessionUrl;
 	@JsonProperty("error")
@@ -93,36 +87,6 @@ public class Job implements Serializable {
 	@JsonProperty("applicationId")
 	public void setApplicationId(String applicationId) {
 		this.applicationId = applicationId;
-	}
-
-	@JsonProperty("putId")
-	public String getPutId() {
-		return putId;
-	}
-
-	@JsonProperty("putId")
-	public void setPutId(String putId) {
-		this.putId = putId;
-	}
-
-	@JsonProperty("ordsTimeout")
-	public Boolean getOrdsTimeout() {
-		return ordsTimeout;
-	}
-
-	@JsonProperty("ordsTimeout")
-	public void setOrdsTimeout(Boolean ordsTimeout) {
-		this.ordsTimeout = ordsTimeout;
-	}
-
-	@JsonProperty("graphTimeout")
-	public Boolean getGraphTimeout() {
-		return graphTimeout;
-	}
-
-	@JsonProperty("graphTimeout")
-	public void setGraphTimeout(Boolean graphTimeout) {
-		this.graphTimeout = graphTimeout;
 	}
 
 	@JsonProperty("graphSessionUrl")
@@ -207,8 +171,7 @@ public class Job implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId + ", putId=" + putId
-				+ ", ordsTimeout=" + ordsTimeout + ", graphTimeout=" + graphTimeout
+		return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId
 				+ ", graphSessionUrl=" + graphSessionUrl + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
 				+ ", startDeliveryDtm=" + startDeliveryDtm + ", endDeliveryDtm=" + endDeliveryDtm
 				+ ", percentageComplete=" + percentageComplete + ", fileName=" + fileName + ", mimeType=" + mimeType

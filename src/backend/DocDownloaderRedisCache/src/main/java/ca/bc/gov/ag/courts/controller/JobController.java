@@ -6,6 +6,7 @@ import ca.bc.gov.ag.courts.util.JobValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -81,13 +82,19 @@ public class JobController {
     }
 
     @DeleteMapping(path = "/job/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String deleteJob(@PathVariable String id) {
+    public ResponseEntity<String> deleteJob(@PathVariable String id) throws NotFoundException {
 
         logger.info("Delete Job called. Job being deleted is : " + id);
-        repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Job not found for id: " + id));
-        repo.deleteById(id); // note - use of same repo method as add.
+        
+        Optional<Job> job = repo.findById(id);
+        
+        if (job.isEmpty()) {
+        	return new ResponseEntity<String>("Id not found", HttpStatus.NOT_FOUND);
+        } else {
+        	repo.deleteById(id);
+        	return new ResponseEntity<String>("Job deleted", HttpStatus.OK);
+        }
 
-        return "Job deleted";
     }
 
 }
