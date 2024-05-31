@@ -82,7 +82,7 @@ public class DocumentController implements DocumentApi {
 		
 		logger.info("Heard a call to the document status endpoint for docId: " + docId);
 		
-		// TODO - Response data will come from Redis Cache. 
+		// TODO - Response data will come from Redis Cache. test
 		// TODO - Needs input params defined.
 		// TODO - Needs to return Job object if it exists. 
 		FiletransferstatusResponse resp = new FiletransferstatusResponse();
