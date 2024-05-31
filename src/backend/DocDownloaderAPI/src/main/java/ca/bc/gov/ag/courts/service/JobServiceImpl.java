@@ -57,8 +57,8 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			// update after sync ORDS push file to intermediate NFS storage. 
 			rService.updateJob(job); 
 		   
-			// TODO - Create ORDS call with (Sync) and once it completes, initiate MS Graph upload process (void return type).
-			// TODO - At every stage update Reddis with state.
+			// TODO - check for the presence of the file on the NFS. (requires connectivity - See SCV-456)  
+			// TODO - initiate MS Graph upload process. (requires connectivity - See SCV-457). 
 			
             Thread.sleep(5000); // Simulating job processing time
             
@@ -82,13 +82,16 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * @param docSessionId
 	 * @return
 	 */	
-	public String getDocSessionStatus(String docSessionId) {
+	public String getDocSessionStatus(String correlationId) {
 
+		//TODO - Needs to be completed. 
+		
 		RestTemplate restTemplate = new RestTemplate();
 	    String url = "https://httpbin.org/get";
 	    String response = "Started";
 	    System.out.println("Process Started");
 
+	    // TODO - this call will be made to the redis cache client. 
 	    CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {     
 	        restTemplate.getForObject(url, String.class);
 	        return "success";
