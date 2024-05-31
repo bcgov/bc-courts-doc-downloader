@@ -57,9 +57,7 @@ public class OrdsDocumentServiceImpl implements OrdsDocumentService {
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<ResponseEntity<OrdsPushResponse>> pushFile(Job job) throws DownloaderException {
 
-		logger.info("Calling ORDS getFile...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
-		
-		//TODO - Take the PutId out of the job. It's already available from the props. 
+		logger.info("ORDS Service: Calling ORDS getFile...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
 		
 		URIBuilder builder;
 		try {
@@ -89,12 +87,11 @@ public class OrdsDocumentServiceImpl implements OrdsDocumentService {
 
 	}
 	
-	@Async
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", 
 		backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<ResponseEntity<OrdsHealthResponse>> getOrdsHealth() throws HttpClientErrorException {
 
-		logger.info("Calling ORDS (Health Ping)...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+		logger.info("ORDS Service: Calling ORDS (Health Ping)...retry count " + RetrySynchronizationManager.getContext().getRetryCount());
 
 		ResponseEntity<OrdsHealthResponse> resp = null;
 

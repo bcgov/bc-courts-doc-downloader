@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -73,7 +74,7 @@ class JobControllerTests {
     }
 
     @Test
-    public void testDeleteJobs() {
+    public void testDeleteJobs() throws NotFoundException {
         Mockito.when(jobController.deleteJob(Mockito.anyString())).thenReturn(Mockito.any()); // replace with your actual deleteJob endpoint
         Assertions.assertDoesNotThrow(() -> jobController.deleteJob("123"));
     }
@@ -89,9 +90,6 @@ class JobControllerTests {
         job.setId("0990995");
         job.setGuid("d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyO");
         job.setApplicationId("CeisCso");
-        job.setPutId("SCV");
-        job.setOrdsTimeout(false);
-        job.setGraphTimeout(false);
         job.setGraphSessionUrl("http://mysite.com");
         job.setError(false);
         job.setLastErrorMessage("wow");

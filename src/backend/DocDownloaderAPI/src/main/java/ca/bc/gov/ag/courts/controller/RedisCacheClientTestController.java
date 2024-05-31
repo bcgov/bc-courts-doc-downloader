@@ -54,8 +54,6 @@ public class RedisCacheClientTestController {
 		job.setId("123456");
 		job.setGuid("79278979237492");
 		job.setApplicationId("CeisCso");
-		job.setOrdsTimeout(false);
-		job.setGraphTimeout(false);
 		job.setGraphSessionUrl("8623846823");
 		job.setError(false);
 		job.setLastErrorMessage(null);
@@ -76,8 +74,6 @@ public class RedisCacheClientTestController {
 		job.setId("123456");
 		job.setGuid("79278979237492");
 		job.setApplicationId("CeisCso");
-		job.setOrdsTimeout(false);
-		job.setGraphTimeout(false);
 		job.setGraphSessionUrl("8623846823");
 		job.setError(false);
 		job.setLastErrorMessage(null);
