@@ -29,7 +29,13 @@
 		<swagger-core-version>2.2.21</swagger-core-version>
 		
 	</properties>
-	
+
+	<profiles>
+		<profile>
+			<id>splunk</id>
+		</profile>
+	</profiles>
+
 	<dependencies>
 	
 		<dependency>
