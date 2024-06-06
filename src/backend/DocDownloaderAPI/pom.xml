@@ -27,7 +27,7 @@
 		<javax-servlet-api-version>4.0.1</javax-servlet-api-version>
 		<jackson-databind-version>0.2.6</jackson-databind-version>
 		<swagger-core-version>2.2.21</swagger-core-version>
-		
+		<splunk-library-javalogging.version>1.11.8</splunk-library-javalogging.version>
 	</properties>
 
 	<dependencies>
@@ -199,7 +199,7 @@
 				<dependency>
 					<groupId>com.splunk.logging</groupId>
 					<artifactId>splunk-library-javalogging</artifactId>
-					<version>1.11.4</version>
+					<version>${splunk-library-javalogging.version}</version>
 				</dependency>
 			</dependencies>
 		</profile>
