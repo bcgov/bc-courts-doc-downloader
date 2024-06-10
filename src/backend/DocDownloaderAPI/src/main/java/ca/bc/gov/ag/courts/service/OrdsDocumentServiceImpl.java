@@ -61,7 +61,7 @@ public class OrdsDocumentServiceImpl implements OrdsDocumentService {
 		
 		URIBuilder builder;
 		try {
-			builder = new URIBuilder(props.getOrdsSsgBaseUrl() + "/doc/push-to-server")
+			builder = new URIBuilder(props.getOrdsSsgBaseUrl() + "/doc/push-doc-to-server")
 				    .addParameter("document_guid", new String(job.getGuid()))
 				    .addParameter("application_id", props.getOrdsApplicationId())
 				    .addParameter("app_password", props.getOrdsPassword())
