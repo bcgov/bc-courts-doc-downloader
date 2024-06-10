@@ -40,7 +40,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	@Async
     public void processDocRequest(Job job) {
 		
-		MDC.put("correlationid", job.getId());
+		MDC.put("transferid", job.getId());
         
 		logger.info("Heard a call to processDocRequest.");
 		
@@ -52,8 +52,6 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			// create the initial entry in Redis.
 			rService.createJob(job); 
 			
-			// TODO - This needs to be checked for proper 404 when file not found 
-			// I alerted BK to the issue on May 31. 
 			CompletableFuture<ResponseEntity<OrdsPushResponse>> _resp = oService.pushFile(job); 
 			ResponseEntity<OrdsPushResponse> resp =  _resp.get();
 			
@@ -74,8 +72,8 @@ public class JobServiceImpl implements JobService, JobEventListener {
         } catch (Exception e) {
         	
         	this.onError(job, e);  // error callback
-        	
             Thread.currentThread().interrupt();
+            
         } finally {
         	MDC.remove("correlationid");
         }
@@ -127,7 +125,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		
     	job.setError(true); 
     	job.setLastErrorMessage(ex.getMessage());
-    	job.setPercentageComplete(0);
+    	
     	try {
 			rService.updateJob(job);
 		} catch (Exception e1) {

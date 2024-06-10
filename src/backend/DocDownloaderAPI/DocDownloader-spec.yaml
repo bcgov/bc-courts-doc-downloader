@@ -14,12 +14,9 @@ paths:
       tags:
         - File Transfer
       description: File Transfer Request
-      parameters:
-       - in: header
-         name: X-Correlation-Id
-         schema: 
-           type: string
       requestBody:
+        description: File transfer request
+        required: true
         content:
           application/json:
             schema:
@@ -106,16 +103,27 @@ components:
     filetransfer_request:
       type: object
       required:
-        - obj_guid
+          - objGuid
+          - email
+          - filePath
       properties:
-        obj_guid: 
+        objGuid: 
            type: string
            format: byte
            description: 'An Object Guid as base64'
+        email: 
+           type: string
+           format: email
+           description: 'The recipients email address' 
+        filePath:
+           type: string
+           description: 'The path to write the file to. Leave as null for writing to root.'
     filetransfer_response:
       type: object
       properties:
-        result:
+        objGuid: 
+          type: string
+        transferId:
           type: string
     filetransferstatus_response:
       type: object

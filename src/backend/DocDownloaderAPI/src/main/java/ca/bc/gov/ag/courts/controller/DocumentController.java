@@ -1,11 +1,12 @@
 package ca.bc.gov.ag.courts.controller;
 
+import java.util.Base64;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import ca.bc.gov.ag.courts.Utils.InetUtils;
 import ca.bc.gov.ag.courts.api.DocumentApi;
 import ca.bc.gov.ag.courts.api.model.FiletransferRequest;
 import ca.bc.gov.ag.courts.api.model.FiletransferResponse;
@@ -41,24 +43,26 @@ public class DocumentController implements DocumentApi {
 	
 	@Override
 	public ResponseEntity<FiletransferResponse> documentUploadPost(
-	        @Parameter(name = "X-Correlation-Id", description = "", in = ParameterIn.HEADER) @RequestHeader(value = "X-Correlation-Id", required = false) String xCorrelationId,
-	        @Parameter(name = "FiletransferRequest", description = "") @Valid @RequestBody(required = false) FiletransferRequest filetransferRequest
+	        @Parameter(name = "FiletransferRequest", description = "File transfer request", required = true) @Valid @RequestBody FiletransferRequest filetransferRequest
 	    ) {
 		
 		FiletransferResponse resp = new FiletransferResponse();
 		
 		logger.info("Heard a call to the document upload endpoint. ");
 		
-		// Check if correlationId (jobId) already exists
-		if (rService.jobExists(xCorrelationId)) {
-			logger.warn("Requested job, " + xCorrelationId + " already exists. Job not created.");
-			resp.setResult("Job already exists");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
-		}
+//      Check if correlationId (jobId) already exists
+//		if (rService.jobExists(xCorrelationId)) {
+//			logger.warn("Requested job, " + xCorrelationId + " already exists. Job not created.");
+//			resp.setResult("Job already exists");
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
+//		}
+		
+		// Create transfer guid for request. 
+		String transferGuid = InetUtils.getGuidWODash();
 		
 		Job job = new Job();
-		job.setId(xCorrelationId); // note mapping here. 
-		job.setGuid(new String(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
+		job.setId(transferGuid); // note mapping here. Job Id is transfer Id. Job status may be found using transfer Id.   
+		job.setGuid(Base64.getEncoder().encodeToString(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
 		job.setApplicationId(props.getOrdsApplicationId());
 		job.setGraphSessionUrl(null);
 		job.setError(false);
@@ -66,12 +70,14 @@ public class DocumentController implements DocumentApi {
 		job.setStartDeliveryDtm(null);
 		job.setEndDeliveryDtm(null);
 		job.setPercentageComplete(0);
+		job.setFilePath(filetransferRequest.getFilePath());
 		job.setFileName(null); // available after ORDS call 
 		job.setMimeType(null); // available after ORDS call
 		
 		jService.processDocRequest(job); // trip of the processing in this async thread. 
 		
-		resp.setResult("Job Created");
+		resp.setObjGuid(Base64.getEncoder().encodeToString(filetransferRequest.getObjGuid()));
+		resp.setTransferId(transferGuid);
 		
 		return new ResponseEntity<FiletransferResponse>(resp, HttpStatus.ACCEPTED);
 	}

@@ -12,9 +12,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.RequiredArgsConstructor;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "id", "guid", "applicationId", "ordsTimeout", "graphTimeout",
-		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName",
-		"mimeType" })
+@JsonPropertyOrder({ "id", "guid", "correlationId", "applicationId",  "email", "ordsTimeout", "graphTimeout",
+	"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName", "filePath",
+	"mimeType" })
 @RedisHash("Job")
 @RequiredArgsConstructor
 /**
@@ -40,6 +40,8 @@ public class Job implements Serializable {
 	private String guid;
 	@JsonProperty("applicationId")
 	private String applicationId;
+	@JsonProperty("email")
+	private String email;
 	@JsonProperty("graphSessionUrl")
 	private String graphSessionUrl;
 	@JsonProperty("error")
@@ -54,6 +56,8 @@ public class Job implements Serializable {
 	private Integer percentageComplete;
 	@JsonProperty("fileName")
 	private String fileName;
+	@JsonProperty("filePath")
+	private String filePath;
 	@JsonProperty("mimeType")
 	private String mimeType;
 	
@@ -85,6 +89,16 @@ public class Job implements Serializable {
 	@JsonProperty("applicationId")
 	public void setApplicationId(String applicationId) {
 		this.applicationId = applicationId;
+	}
+	
+	@JsonProperty("email")
+	public String getEmail() {
+		return email;
+	}
+
+	@JsonProperty("email")
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	@JsonProperty("graphSessionUrl")
@@ -156,6 +170,16 @@ public class Job implements Serializable {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
+	
+	@JsonProperty("filePath")
+	public String getFilePath() {
+		return filePath;
+	}
+
+	@JsonProperty("filePath")
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
 
 	@JsonProperty("mimeType")
 	public String getMimeType() {
@@ -169,11 +193,12 @@ public class Job implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId
+		return "Job [id=" + id + ", guid=" + guid + ", applicationId=" + applicationId 
+				+ ", email=not provided"
 				+ ", graphSessionUrl=" + graphSessionUrl + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
 				+ ", startDeliveryDtm=" + startDeliveryDtm + ", endDeliveryDtm=" + endDeliveryDtm
-				+ ", percentageComplete=" + percentageComplete + ", fileName=" + fileName + ", mimeType=" + mimeType
+				+ ", percentageComplete=" + percentageComplete + ", fileName=" + fileName + ", filePath=" + filePath 
+				+ ", mimeType=" + mimeType
 				+ "]";
 	}
-
 }
