@@ -9,7 +9,6 @@ import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import ca.bc.gov.ag.courts.Utils.TimeHelper;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;

@@ -16,6 +16,5 @@ import ca.bc.gov.ag.courts.model.Job;
 public interface JobService {
 	
 	public void processDocRequest(Job job);
-	public String getDocSessionStatus(String docSessionId);
 	
 }
