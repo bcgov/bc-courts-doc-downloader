@@ -9,7 +9,6 @@ import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import ca.bc.gov.ag.courts.Utils.TimeHelper;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
@@ -75,45 +74,10 @@ public class JobServiceImpl implements JobService, JobEventListener {
             Thread.currentThread().interrupt();
             
         } finally {
-        	MDC.remove("correlationid");
+        	MDC.remove("transferid");
         }
     }
 	
-
-	/**
-	 * 
-	 * This call will be made to the Redis Cache Client service. 
-	 * 
-	 * @param docSessionId
-	 * @return
-	 */	
-	@Async
-	public String getDocSessionStatus(String correlationId) {
-
-		//TODO - Needs to be completed. 
-		
-		RestTemplate restTemplate = new RestTemplate();
-	    String url = "https://httpbin.org/get";
-	    String response = "Started";
-	    System.out.println("Process Started");
-
-	    // TODO - this call will be made to the redis cache client. 
-	    CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {     
-	        restTemplate.getForObject(url, String.class);
-	        return "success";
-	    });
-	    
-	    try {
-	        response = future.get();
-	        System.out.println("Call completed. Response was " + response);
-	    }
-	    catch(Exception e){
-	        response = e.toString();
-	    }
-
-	    return response;
-
-	}
 
 	@Override
 	public void onCompletion(Job job) {
