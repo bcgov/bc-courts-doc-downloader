@@ -1,9 +1,9 @@
 package ca.bc.gov.ag.courts.controller;
 
 import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import ca.bc.gov.ag.courts.Utils.InetUtils;
@@ -83,22 +82,28 @@ public class DocumentController implements DocumentApi {
 	}
 	
 	@Override
-	public ResponseEntity<FiletransferstatusResponse> documentStatusDocIdGet(
-	        @Min(1) @Parameter(name = "docId", description = "The document Id", required = true, in = ParameterIn.PATH) @PathVariable("docId") Integer docId) {
+	public ResponseEntity<FiletransferstatusResponse> documentStatusTransferIdGet(
+	        @Parameter(name = "transferId", description = "The document transfer Id", required = true, in = ParameterIn.PATH) @PathVariable("transferId") String transferId) {
 		
-		logger.info("Heard a call to the document status endpoint for docId: " + docId);
+		logger.info("Heard a call to the document status endpoint for transferId: " + transferId);
 		
-		// TODO - Response data will come from Redis Cache. test
-		// TODO - Needs input params defined.
-		// TODO - Needs to return Job object if it exists. 
+		Job job = null;
+		try {
+			CompletableFuture<ResponseEntity<Job>> _job	= rService.getJob(transferId);
+			job = _job.get().getBody();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+		
 		FiletransferstatusResponse resp = new FiletransferstatusResponse();
-		resp.setPercentTransfered(75);
-		resp.setFileRequestedDtm("2013-09-15T05:53:00-08:00");
-		resp.setFileDeliveredDtm("2013-09-15T05:55:00-08:00");
-		resp.setFileName("test1.txt");
-		resp.setFilePath("/me/court/0122202/files");
-		resp.fileSize(123L);
-		resp.setMime("application/pdf");
+		resp.setPercentTransfered(job.getPercentageComplete());
+		resp.setStartDeliveryDtm(job.getStartDeliveryDtm());
+		resp.setEndDeliveryDtm(job.getEndDeliveryDtm());
+		resp.setFileName(job.getFileName());
+		resp.setFilePath(job.getFilePath());
+		resp.fileSize(12345L);
+		resp.setMime(job.getMimeType());
 		
 		return new ResponseEntity<FiletransferstatusResponse>(resp, HttpStatus.OK);
 	}

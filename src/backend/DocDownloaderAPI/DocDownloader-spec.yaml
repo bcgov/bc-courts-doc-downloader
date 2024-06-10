@@ -28,17 +28,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/filetransfer_response"
-  /document/status/{docId}:
+  /document/status/{transferId}:
    get:
+      summary: Document status endpoint
       parameters:
         - in: path
-          name: docId
+          name: transferId
           required: true
           schema:
-            type: integer
+            type: string
             minimum: 1
-          description: The document Id
-      summary: Document status endpoint 
+          description: The document transfer Id
       tags: 
         - File Transfer
       description: File Transfer Status Request
@@ -130,13 +130,13 @@ components:
       properties:
         percentTransfered:
           type: integer
-        fileRequestedDtm: 
+        startDeliveryDtm: 
           type: string
-          description: Creation date and time + UTC Offset 
+          description: Start delivery date and time + UTC Offset 
           example: "2013-09-15T05:53:00-08:00"
-        fileDeliveredDtm: 
+        endDeliveryDtm: 
           type: string
-          description: Delivery date and time + UTC Offset 
+          description: End delivery date and time + UTC Offset 
           example: "2013-09-15T05:54:00-08:00"
         fileSize:
           type: integer
