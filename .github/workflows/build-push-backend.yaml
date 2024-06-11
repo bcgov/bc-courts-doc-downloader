@@ -4,7 +4,7 @@ on:
   push:
     branches: [develop]
     paths:
-      - "src/backend/**"
+      - "src/backend/DocDownloaderAPI/**"
       - ".github/workflows/build-push-backend.yaml"
   workflow_dispatch:
 env:
