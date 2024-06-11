@@ -8,7 +8,7 @@ services:
     container_name: docdownloader-api
     image: docdownloader-api
     build:
-      context: ./src/backend
+      context: ./src/backend/DocDownloaderAPI
       dockerfile: Dockerfile.docDownloader-api
       args:
         - SERVICE_NAME=DocDownloaderAPI
