@@ -2,7 +2,6 @@ package ca.bc.gov.ag.courts.service;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
@@ -11,7 +10,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -148,6 +146,10 @@ public class JobServiceImpl implements JobService, JobEventListener {
 
 				CompletableFuture<JSONObject> chunkResponse = mService.uploadChunk(uploadUrl, count, fileSize, chunk, fragSize, chunkSize);
 				lastResponseObject = chunkResponse.get();
+				
+				//TODO - HERE - if chunk successful, increment percentage complete. 
+				
+				
 
 				logger.debug("Chunk " + count + " uploaded.");
 

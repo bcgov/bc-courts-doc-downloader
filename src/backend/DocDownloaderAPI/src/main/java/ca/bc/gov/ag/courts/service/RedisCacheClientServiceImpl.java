@@ -70,6 +70,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 		return CompletableFuture.completedFuture(responseEntity);
 	}
 	
+	///TODO - This needs protection from retrying when the transferId is not found (404) otherwise it will retry the max retries. 
 	@Override
 	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<ResponseEntity<Job>> getJob(String jobId) throws Exception {

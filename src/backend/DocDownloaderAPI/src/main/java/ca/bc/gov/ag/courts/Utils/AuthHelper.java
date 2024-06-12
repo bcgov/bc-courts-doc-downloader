@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Base64;
-import java.util.concurrent.CompletableFuture;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import ca.bc.gov.ag.courts.config.AppProperties;
@@ -34,6 +32,7 @@ public class AuthHelper {
     private String clientId;
     private String secretKey;
     private String authority;
+    private String msgEndpoint;
     
 	private AppProperties props; 
 	
@@ -46,6 +45,7 @@ public class AuthHelper {
         clientId = props.getMsgClientId();
         authority = props.getMsgAuthority();
         secretKey = props.getMsgSecretKey();
+        msgEndpoint = props.getMsgEndpointHost();
     }
     
     /** 
@@ -56,7 +56,7 @@ public class AuthHelper {
      * @throws MalformedURLException
      * @throws IOException
      * @throws JSONException
-     */
+     */ 
 	public String GetAccessToken() throws Exception {
 		
 		logger.info("AuthHelper.GetAccessToken called.");
@@ -65,7 +65,7 @@ public class AuthHelper {
 				+ URLEncoder.encode(this.clientId, java.nio.charset.StandardCharsets.UTF_8.toString())
 				+ "&client_secret="
 				+ URLEncoder.encode(this.secretKey, java.nio.charset.StandardCharsets.UTF_8.toString()) + "&scope="
-				+ URLEncoder.encode("https://graph.microsoft.com/.default",
+				+ URLEncoder.encode(this.msgEndpoint + ".default",
 						java.nio.charset.StandardCharsets.UTF_8.toString())
 				+ "&grant_type=client_credentials";
 
