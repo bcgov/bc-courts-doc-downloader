@@ -9,6 +9,7 @@ import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import ca.bc.gov.ag.courts.Utils.TimeHelper;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
@@ -88,7 +89,13 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	public void onError(Job job, Throwable ex) {
 		
     	job.setError(true); 
-    	job.setLastErrorMessage(ex.getMessage());
+    	
+    	if (ex instanceof HttpClientErrorException) {
+    		HttpClientErrorException _ex = (HttpClientErrorException)ex;
+    		job.setLastErrorMessage(_ex.getLocalizedMessage());
+    	} else {
+    		job.setLastErrorMessage(ex.toString());
+    	}
     	
     	try {
 			rService.updateJob(job);

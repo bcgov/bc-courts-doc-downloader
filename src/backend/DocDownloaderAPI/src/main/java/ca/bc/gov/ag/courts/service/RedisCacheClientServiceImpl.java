@@ -1,6 +1,3 @@
-/**
- * 
- */
 package ca.bc.gov.ag.courts.service;
 
 import java.net.URI;
@@ -14,19 +11,19 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import ca.bc.gov.ag.courts.Utils.AuthHelper;
 import ca.bc.gov.ag.courts.Utils.InetUtils;
 import ca.bc.gov.ag.courts.config.AppProperties;
-import ca.bc.gov.ag.courts.handler.RedisClientResponseErrorHandler;
+import ca.bc.gov.ag.courts.handler.GenericErrorHandler;
 import ca.bc.gov.ag.courts.model.Job;
 import jakarta.annotation.PostConstruct;
-import org.springframework.web.client.RestClientException;
-import org.springframework.retry.support.RetrySynchronizationManager;
 
 
 /**
@@ -46,7 +43,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	
 	public RedisCacheClientServiceImpl(RestTemplateBuilder restTemplateBuilder, AppProperties props) {
 		this.restTemplate = restTemplateBuilder
-				.errorHandler(new RedisClientResponseErrorHandler()) 
+				.errorHandler(new GenericErrorHandler()) 
 				.build(); 
 		this.props = props; 
 	}
@@ -74,10 +71,11 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	}
 	
 	@Override
-	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
+	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<ResponseEntity<Job>> getJob(String jobId) throws Exception {
 		
-		//logger.info("Redis Service: Calling getJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+		logger.info("Redis Service: Calling getJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+		
 		URI uri = new URI(this.redisUrl + "jobs/" + jobId);
 
 		HttpEntity<String> entity = new HttpEntity<String>(
@@ -92,7 +90,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<ResponseEntity<String>> createJob(Job job) throws Exception {
 		
-		//logger.info("Redis Service: Calling createJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+		logger.info("Redis Service: Calling createJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
 		URI uri = new URI(this.redisUrl + "job");
 
 		HttpEntity<Job> entity = new HttpEntity<Job>(job,
@@ -107,7 +105,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<ResponseEntity<String>> updateJob(Job job) throws Exception {
 		
-		//logger.info("Redis Service: Calling updateJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+		logger.info("Redis Service: Calling updateJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
 		URI uri = new URI(this.redisUrl + "job");
 
 		HttpEntity<Job> entity = new HttpEntity<Job>(job,
@@ -126,7 +124,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 		 * Returns 404 NOT FOUND if jobId doesn't exist. 
 		 */
 		
-		//logger.info("Redis Service: Calling deleteJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+		logger.info("Redis Service: Calling deleteJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
 		URI uri = new URI(this.redisUrl + "job/" + jobId);
 
 		HttpEntity<Job> entity = new HttpEntity<Job>(

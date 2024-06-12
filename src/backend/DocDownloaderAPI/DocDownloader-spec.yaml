@@ -48,7 +48,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/filetransferstatus_response"
+                $ref: "#/components/schemas/filetransferstatus_response"       
   /ping:
    get:
       summary: Back end connectivity test
@@ -138,6 +138,12 @@ components:
           type: string
           description: End delivery date and time + UTC Offset 
           example: "2013-09-15T05:54:00-08:00"
+        error:
+          type: boolean
+          description: Did an error occur 
+        lastErrorMessage: 
+          type: string     
+          description: Last error message
         fileSize:
           type: integer
           format: int64
@@ -167,7 +173,7 @@ components:
         result:
           type: string
         error: 
-          type: string
+          type: string    
     msgtest_request:
       type: object
       required:

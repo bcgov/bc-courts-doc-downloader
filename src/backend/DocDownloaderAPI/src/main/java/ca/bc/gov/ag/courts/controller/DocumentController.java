@@ -83,19 +83,26 @@ public class DocumentController implements DocumentApi {
 	
 	@Override
 	public ResponseEntity<FiletransferstatusResponse> documentStatusTransferIdGet(
-	        @Parameter(name = "transferId", description = "The document transfer Id", required = true, in = ParameterIn.PATH) @PathVariable("transferId") String transferId) {
-		
+			@Parameter(name = "transferId", description = "The document transfer Id", required = true, in = ParameterIn.PATH) @PathVariable("transferId") String transferId) {
+
 		logger.info("Heard a call to the document status endpoint for transferId: " + transferId);
-		
-		Job job = null;
+
+		ResponseEntity<Job> response = null;
 		try {
-			CompletableFuture<ResponseEntity<Job>> _job	= rService.getJob(transferId);
-			job = _job.get().getBody();
+			CompletableFuture<ResponseEntity<Job>> _job = rService.getJob(transferId);
+			response = _job.get();
 		} catch (Exception e) {
-			
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
-		
+			
+		// Return 404 in the event the transferId is not found or expired. 
+		if (response == null) {
+			return new ResponseEntity<FiletransferstatusResponse>(HttpStatus.NOT_FOUND);
+		}
+	
+		Job job = response.getBody();
+
 		FiletransferstatusResponse resp = new FiletransferstatusResponse();
 		resp.setPercentTransfered(job.getPercentageComplete());
 		resp.setStartDeliveryDtm(job.getStartDeliveryDtm());
@@ -104,8 +111,11 @@ public class DocumentController implements DocumentApi {
 		resp.setFilePath(job.getFilePath());
 		resp.fileSize(12345L);
 		resp.setMime(job.getMimeType());
-		
+		resp.setError(job.getError());
+		resp.setLastErrorMessage(job.getLastErrorMessage());
+
 		return new ResponseEntity<FiletransferstatusResponse>(resp, HttpStatus.OK);
+
 	}
 
 }
