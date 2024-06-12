@@ -5,17 +5,14 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.validation.Valid;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import ca.bc.gov.ag.courts.Utils.HttpClientHelper;
 import ca.bc.gov.ag.courts.Utils.InetUtils;
 import ca.bc.gov.ag.courts.api.DocumentApi;
 import ca.bc.gov.ag.courts.api.model.FiletransferRequest;
@@ -25,13 +22,8 @@ import ca.bc.gov.ag.courts.config.AppProperties;
 import ca.bc.gov.ag.courts.model.Job;
 import ca.bc.gov.ag.courts.service.JobService;
 import ca.bc.gov.ag.courts.service.RedisCacheClientService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import ca.bc.gov.ag.courts.api.model.ErrorResponse;
 
 @RestController
 public class DocumentController implements DocumentApi {
