@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
@@ -23,6 +22,7 @@ import ca.bc.gov.ag.courts.Utils.AuthHelper;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
 import ca.bc.gov.ag.courts.config.AppProperties;
 import ca.bc.gov.ag.courts.exception.DownloaderException;
+import ca.bc.gov.ag.courts.handler.GenericErrorHandler;
 import ca.bc.gov.ag.courts.model.Job;
 import ca.bc.gov.ag.courts.model.OrdsHealthResponse;
 
@@ -43,7 +43,9 @@ public class OrdsDocumentServiceImpl implements OrdsDocumentService {
 	private AppProperties props; 
 
 	public OrdsDocumentServiceImpl(RestTemplateBuilder restTemplateBuilder, AppProperties props) {
-		this.restTemplate = restTemplateBuilder.build();
+		this.restTemplate = restTemplateBuilder
+				.errorHandler(new GenericErrorHandler()) 
+				.build(); 
 		this.props = props; 
 	}
 	

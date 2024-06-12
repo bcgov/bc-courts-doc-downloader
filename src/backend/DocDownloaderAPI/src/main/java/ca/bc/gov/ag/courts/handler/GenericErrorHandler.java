@@ -15,7 +15,7 @@ import org.springframework.web.client.ResponseErrorHandler;
  *
  */
 @Component
-public class RedisClientResponseErrorHandler implements ResponseErrorHandler {
+public class GenericErrorHandler implements ResponseErrorHandler {
 
 	@Override
 	public boolean hasError(ClientHttpResponse httpResponse) throws IOException {
