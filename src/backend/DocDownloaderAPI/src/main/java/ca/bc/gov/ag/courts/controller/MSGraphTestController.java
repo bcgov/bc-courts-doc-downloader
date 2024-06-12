@@ -1,9 +1,9 @@
 package ca.bc.gov.ag.courts.controller;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.io.BufferedInputStream;
 
 import javax.validation.Valid;
 
@@ -45,29 +45,14 @@ public class MSGraphTestController implements MsgtestApi {
 		try {
 			
 			logger.info("Initiating MS Graph file upload test for : " + msgtestRequest.getFileName());
-			
-			String token; 
-			
-			JSONObject jResponse = null; 
-			CompletableFuture<JSONObject> at = authService.GetAccessToken();
-			jResponse = at.get();
-			if (jResponse.getInt("responseCode") == HttpStatus.OK.value())  
-					token = jResponse.getJSONObject("responseMsg").getString("access_token");
-			else 
-				throw new Exception(jResponse.getJSONObject("responseMsg").getJSONObject("error").getString("message")); 
+			 
+			String token = authService.GetAccessToken();
 			
 			logger.debug("token: " + token);
 			
-			String userId; 
-			CompletableFuture<JSONObject> ui = msgService.GetUserId(token, msgtestRequest.getEmail());
-			jResponse = ui.get();
-			if (jResponse.getInt("responseCode") == HttpStatus.OK.value())  
-				userId = jResponse.getJSONObject("responseMsg").getString("id");
-			else 
-				throw new Exception(jResponse.getJSONObject("responseMsg").getJSONObject("error").getString("message")); 
+			String userId = msgService.GetUserId(token, msgtestRequest.getEmail());
 
-			CompletableFuture<String> sessionResponse  = msgService.createUploadSessionFromUserId(token, userId, msgtestRequest.getFolder(), msgtestRequest.getFileName());
-			String uploadUrl = sessionResponse.get();
+			String uploadUrl = msgService.createUploadSessionFromUserId(token, userId, msgtestRequest.getFolder(), msgtestRequest.getFileName());
 			
 			long fileSize = msgtestRequest.getData().length;
 			

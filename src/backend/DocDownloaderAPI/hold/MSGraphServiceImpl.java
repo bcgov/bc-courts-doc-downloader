@@ -1,9 +1,6 @@
 package ca.bc.gov.ag.courts.service;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -75,7 +72,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 	 * @throws Exception
 	 */
 	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
-	public String createUploadSession(String accessToken, String fileFolder, String fileName) throws Exception {
+	public CompletableFuture<String> createUploadSession(String accessToken, String fileFolder, String fileName) throws Exception {
 		
 		logger.debug("Calling createUploadSession...retry count: " + RetrySynchronizationManager.getContext().getRetryCount());
 		logger.debug("Processing createUploadSession asynchronously with Thread {}", Thread.currentThread().getName());
@@ -108,7 +105,7 @@ public class MSGraphServiceImpl implements MSGraphService {
         if(statusCode.is2xxSuccessful()) {  
           
 	        JSONObject responseObject = HttpClientHelper.processResponse(statusCode.value(), response.getBody());
-	        return responseObject.getJSONObject("responseMsg").getString("uploadUrl");
+	        return CompletableFuture.completedFuture(responseObject.getJSONObject("responseMsg").getString("uploadUrl"));
         
         } else {
         	
@@ -133,7 +130,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 	 * @throws Exception
 	 */
 	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
-	public String createUploadSessionFromUserId(String accessToken, String userId, String fileFolder,
+	public CompletableFuture<String> createUploadSessionFromUserId(String accessToken, String userId, String fileFolder,
 				String fileName) throws Exception {	
 
 		logger.debug("Calling createUploadSessionFromUserId...retry count: "
@@ -170,7 +167,8 @@ public class MSGraphServiceImpl implements MSGraphService {
 		if (statusCode.is2xxSuccessful()) {
 
 			JSONObject responseObject = HttpClientHelper.processResponse(statusCode.value(), response.getBody());
-			return responseObject.getJSONObject("responseMsg").getString("uploadUrl");
+			return CompletableFuture
+					.completedFuture(responseObject.getJSONObject("responseMsg").getString("uploadUrl"));
 
 		} else {
 
@@ -180,8 +178,6 @@ public class MSGraphServiceImpl implements MSGraphService {
 			throw new Exception(errorMessage);
 		}
 	}
-	
-
 		
 	/**
 	 * 
@@ -260,12 +256,13 @@ public class MSGraphServiceImpl implements MSGraphService {
 	 * @throws IOException
 	 * @throws JSONException
 	 */
-	public String GetUserId(String accessToken, String email) throws Exception {
-
+	public CompletableFuture<JSONObject> GetUserId(String accessToken, String email) throws MalformedURLException, IOException, JSONException {
+	
 		if (!validateEmail(email)) {
-
-			String jError = "{\"error\": {\"code\": \"Invalid Email format\",\"message\": \"Invalid Email format\"}}";
-			throw new Exception(jError);
+			
+			String jError = "{\"error\": {\"code\": \"Invalid Email format\",\"message\": \"Invalid Email format\"}}"; 
+			
+			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(HttpStatus.BAD_REQUEST.value(), jError)); 
 		}
 
 		String useridQuery = props.getMsgEndpointHost() + "v1.0/users('" + email + "')";
@@ -273,26 +270,21 @@ public class MSGraphServiceImpl implements MSGraphService {
 		HttpURLConnection connection = null;
 		URL url = new URL(useridQuery);
 		connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestMethod("GET");
-		connection.setRequestProperty("Authorization", "Bearer " + accessToken);
-		connection.setRequestProperty("Accept", "*/*");
-
-		int responseCode = connection.getResponseCode();
+		connection.setRequestMethod("GET"); 
+	    connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+	    connection.setRequestProperty("Accept", "*/*");
+	    
+	    int responseCode = connection.getResponseCode();
 		String response = HttpClientHelper.getResponseStringFromConn(connection);
-
-		if (HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
-
-			JSONObject jResponse = HttpClientHelper.processResponse(responseCode, response);
-			return jResponse.getJSONObject("responseMsg").getString("id");
-
+		
+		if (!HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
+			logger.error("GetUserId failure. Response: " + response);
+			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response)); 
 		} else {
-
-			JSONObject responseObject = HttpClientHelper.processResponse(responseCode, response);
-			String errorMessage = "Error creating upload session from email: "
-					+ responseObject.getJSONObject("responseMsg").getString("message");
-			logger.error(errorMessage);
-			throw new Exception(errorMessage);
+			logger.debug("GetUserId response: " + response);
 		}
+
+		return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response));
 
 	}
 	

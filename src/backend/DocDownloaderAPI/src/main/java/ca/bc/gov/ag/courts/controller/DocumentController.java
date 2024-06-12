@@ -64,6 +64,7 @@ public class DocumentController implements DocumentApi {
 		job.setGuid(Base64.getEncoder().encodeToString(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
 		job.setApplicationId(props.getOrdsApplicationId());
 		job.setGraphSessionUrl(null);
+		job.setEmail(filetransferRequest.getEmail());
 		job.setError(false);
 		job.setLastErrorMessage(null);
 		job.setStartDeliveryDtm(null);

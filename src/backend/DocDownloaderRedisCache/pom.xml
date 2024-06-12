@@ -16,11 +16,8 @@
     <properties>
         <java.version>17</java.version>
         <cglib.version>3.2.4</cglib.version>
-        <jedis.version>5.1.2</jedis.version>
         <joda-time.version>2.12.7</joda-time.version>
         <splunk-library-javalogging.version>1.11.8</splunk-library-javalogging.version>
-        <logback-classic>1.4.14</logback-classic>
-        <janino>3.1.6</janino>
         <start-class>ca.bc.gov.ag.courts.RedisCacheApplication</start-class>
     </properties>
 
@@ -61,7 +58,6 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>${jedis.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -74,12 +70,10 @@
         <dependency>
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
-            <version>${janino}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback-classic}</version>
         </dependency>
         <!-- Test Dependencies -->
         <dependency>

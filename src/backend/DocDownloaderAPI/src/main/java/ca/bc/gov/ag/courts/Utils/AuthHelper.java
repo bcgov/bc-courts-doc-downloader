@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import ca.bc.gov.ag.courts.config.AppProperties;
@@ -56,7 +57,7 @@ public class AuthHelper {
      * @throws IOException
      * @throws JSONException
      */
-	public CompletableFuture<JSONObject> GetAccessToken() throws MalformedURLException, IOException, JSONException {
+	public String GetAccessToken() throws Exception {
 		
 		logger.info("AuthHelper.GetAccessToken called.");
 
@@ -89,8 +90,13 @@ public class AuthHelper {
 		} else {
 			logger.debug("Token request response: " + response);
 		}
-
-		return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response));
+		
+		JSONObject jResponse = HttpClientHelper.processResponse(responseCode, response);
+		
+		if (jResponse.getInt("responseCode") == HttpStatus.OK.value())  
+			return jResponse.getJSONObject("responseMsg").getString("access_token");
+		else 
+			throw new Exception(jResponse.getJSONObject("responseMsg").getJSONObject("error").getString("message"));
 
 	}
 	
