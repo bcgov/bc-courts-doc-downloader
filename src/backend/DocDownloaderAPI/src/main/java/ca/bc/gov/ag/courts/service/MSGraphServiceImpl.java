@@ -45,25 +45,15 @@ public class MSGraphServiceImpl implements MSGraphService {
 	private static final Logger logger = LoggerFactory.getLogger(MSGraphServiceImpl.class);
 
 	private AppProperties props;
-
-	private final String emailRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
-			+ "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-
-	private Pattern emailPattern;
 	
 	public MSGraphServiceImpl (AppProperties props) {
 		this.props = props;
 	}
-
-	@PostConstruct
-	public void init() {
-		emailPattern = Pattern.compile(emailRegex);
-	}
 	
 	/**
 	 * 
-	 * Create upload session. Only works with a token derived using OAuth2 Authorization Code flow.  (e.g., token created 
-	 * on behalf of the user - aka 'Delegated').  
+	 * Create upload session. Only works with a token derived using OAuth2 Client credentials flow.  (e.g., Application request token directly 
+	 * without user intervention).  
 	 * 
 	 * @param accessToken
 	 * @param fileFolder
@@ -182,7 +172,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 		
 	/**
 	 * 
-	 * Upload a Chunk
+	 * Upload a file chunk
 	 * 
 	 * @param uploadUrl
 	 * @param count
@@ -191,9 +181,9 @@ public class MSGraphServiceImpl implements MSGraphService {
 	 * @param fragSize
 	 * @param chunkSize
 	 * @return
-	 * @throws Exception
+	 * @throws Exception 
 	 * 
-	 * Note: Presently this method can not use Spring RestTemplate for uploading file content. 
+	 * Note: Presently Spring RestTemplate doesn't support uploading of file content. 
 	 */
 	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<JSONObject> uploadChunk(String uploadUrl, int count, long fileSize, byte[] chunk, int fragSize, int chunkSize) throws Exception {
@@ -248,22 +238,14 @@ public class MSGraphServiceImpl implements MSGraphService {
 	/**
 	 * getUserId from email address. 
 	 * 
-	 * App must have the following role(s) set to execute the 'users' search operation: User.Read.All.  
+	 * Application must have the following role(s) set to execute the 'users' search operation: User.Read.All.  
 	 * 
 	 * @param accessToken
 	 * @param email
 	 * @return
-	 * @throws MalformedURLException
-	 * @throws IOException
-	 * @throws JSONException
+	 * @throws Exception
 	 */
 	public String GetUserId(String accessToken, String email) throws Exception {
-
-		if (!validateEmail(email)) {
-
-			String jError = "{\"error\": {\"code\": \"Invalid Email format\",\"message\": \"Invalid Email format\"}}";
-			throw new Exception(jError);
-		}
 
 		String useridQuery = props.getMsgEndpointHost() + "v1.0/users('" + email + "')";
 
@@ -291,18 +273,6 @@ public class MSGraphServiceImpl implements MSGraphService {
 			throw new Exception(errorMessage);
 		}
 
-	}
-	
-	/**
-	 * 
-	 * Utility function to validate email format. 
-	 * 
-	 * @param email
-	 * @return
-	 */
-	private boolean validateEmail(String email) {
-		Matcher matcher = emailPattern.matcher(email);
-	    return matcher.matches();
 	}
 
 }

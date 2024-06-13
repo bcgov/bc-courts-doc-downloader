@@ -22,7 +22,10 @@ import ca.bc.gov.ag.courts.config.AppProperties;
 import jakarta.annotation.PostConstruct;
 
 /**
- * Helper methods for acquiring tokens, etc.
+ * Helper methods for acquiring tokens, setting basic auth headers, etc.
+ * 
+ * @author 176899
+ * 
  */
 @Component
 public class AuthHelper {
@@ -59,7 +62,7 @@ public class AuthHelper {
      */ 
 	public String GetAccessToken() throws Exception {
 		
-		logger.info("AuthHelper.GetAccessToken called.");
+		logger.debug("AuthHelper.GetAccessToken called.");
 
 		String parameters = "client_id="
 				+ URLEncoder.encode(this.clientId, java.nio.charset.StandardCharsets.UTF_8.toString())

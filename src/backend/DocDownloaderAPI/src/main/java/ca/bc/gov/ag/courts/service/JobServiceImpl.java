@@ -22,6 +22,25 @@ import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
 import ca.bc.gov.ag.courts.listener.JobEventListener;
 import ca.bc.gov.ag.courts.model.Job; 
 
+/**
+ * 
+ * Main Job Processing service. 
+ * 
+ * This service provides generates an Async process to completely service 1 document push request to OneDrive.
+ * 
+ * Steps: 
+ * 
+ * 	1.) ORDS call is made for the document which returns synchronously. 
+ *  2.) Validate the file has arrived on the intermediate drive location. 
+ *  3.) Request the file upload session URL from MS Graph.
+ *  4.) Sequentially upload the file in chunks until complete. 
+ * 
+ * As single access token is required to initiate the upload session only.  
+ * 
+ * @author 176899
+ *
+ */
+
 @Service
 public class JobServiceImpl implements JobService, JobEventListener {
 	
@@ -44,10 +63,9 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	
 	/**
 	 * 
-	 * Process Job (Doc Request) 
+	 * Main processor  
 	 * 
 	 * @param job
-	 * @param docSessionId
 	 */
 	@Async
     public void processDocRequest(Job job) {
@@ -77,8 +95,9 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		   
 			// TODO - Check for the presence of the file on the NFS. (requires connectivity - See SCV-456)  
 			
-			// Initiate MS Graph upload process by aquiring the session url. (requires connectivity for O/S - See SCV-457). 
+			// Initiate MS Graph upload process by acquiring the session URL. (requires connectivity for O/S - See SCV-457). 
 			String token = aService.GetAccessToken();
+			
 			String sessionUrl = mService.createUploadSessionFromUserId(
 					token, mService.GetUserId(token, job.getEmail()), job.getFilePath(), job.getFileName()
 			);
@@ -110,7 +129,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * 
 	 * Upload file content in chunks
 	 * 
-	 * Note: This method needs to live outside of the MSGraphService class as it calls 'mService.uploadChunk'. If this method lives
+	 * Note: This method must live outside of the MSGraphService class as it calls 'mService.uploadChunk'. If this method lives
 	 * within the MSGraphService, the 'Retryable' uploadChunk fails to remain 'Retryable'.  
 	 * @param job 
 	 * 
@@ -130,9 +149,9 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		// determines percentage complete increment for each chunk.
 		int uploadTick = 90 / numFragments;  
 
-		logger.info("FileSize being uploaded: " + fileSize);
-		logger.info("Number of fragments: " + numFragments);
-		logger.info("Upload chunk percentage increase: " + uploadTick);
+		logger.debug("FileSize being uploaded: " + fileSize);
+		logger.debug("Number of fragments: " + numFragments);
+		logger.debug("Upload chunk percentage increase: " + uploadTick);
 
 		int bytesRead;
 
@@ -170,10 +189,9 @@ public class JobServiceImpl implements JobService, JobEventListener {
 				}
 				this.rService.updateJob(job);
 
-				logger.info("Bytes remaining to be delivered = " + bytesRemaining); // here
 				logger.debug("Chunk " + count + " uploaded.");
-
-				//bytesRemaining = bytesRemaining - chunkSize;
+				logger.debug("Bytes remaining to be delivered = " + bytesRemaining); // here
+				
 				count++;
 			}
 		}
