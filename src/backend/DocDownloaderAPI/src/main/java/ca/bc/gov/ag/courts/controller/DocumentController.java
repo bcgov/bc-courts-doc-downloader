@@ -49,13 +49,6 @@ public class DocumentController implements DocumentApi {
 		
 		logger.info("Heard a call to the document upload endpoint. ");
 		
-//      Check if correlationId (jobId) already exists
-//		if (rService.jobExists(xCorrelationId)) {
-//			logger.warn("Requested job, " + xCorrelationId + " already exists. Job not created.");
-//			resp.setResult("Job already exists");
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
-//		}
-		
 		// Create transfer guid for request. 
 		String transferGuid = InetUtils.getGuidWODash();
 		
@@ -69,7 +62,7 @@ public class DocumentController implements DocumentApi {
 		job.setLastErrorMessage(null);
 		job.setStartDeliveryDtm(null);
 		job.setEndDeliveryDtm(null);
-		job.setPercentageComplete(0);
+		job.setPercentageComplete(0); 
 		job.setFilePath(filetransferRequest.getFilePath());
 		job.setFileName(null); // available after ORDS call 
 		job.setMimeType(null); // available after ORDS call

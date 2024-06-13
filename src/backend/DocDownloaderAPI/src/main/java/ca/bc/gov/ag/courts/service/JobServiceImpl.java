@@ -84,12 +84,15 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			);
 			
 			//TODO - Remove me for prod - Loads a dummy file instead of the one pulled from the object store.  
-			byte[] bytes = TestHelper.fetchFileResourceAsBytes("test.pdf"); 
+			byte[] bytes = TestHelper.fetchFileResourceAsBytes("test.pdf");
+			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("15394_3M.pdf");
+			
+			//TODO - remove this next line once the NFS solution has been implemented 
+			job.setFileSize(bytes.length);
+			
 			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, bytes, sessionUrl);
 			JSONObject mResp = uploadResponse.get();
-			logger.info(mResp.toString());
-			
-            //Thread.sleep(5000); // Simulating job processing time
+			logger.debug(mResp.toString());
             
             this.onCompletion(job); // success callback
             
