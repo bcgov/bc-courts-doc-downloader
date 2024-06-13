@@ -68,8 +68,9 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			ResponseEntity<OrdsPushResponse> resp =  _resp.get();
 			
 			job.setPercentageComplete(10);
-			job.setFileName(resp.getBody().getFilename()); // available after ORDS call 
-			job.setMimeType(resp.getBody().getMimetype()); // available after ORDS call
+			job.setFileName(resp.getBody().getFilename());  
+			job.setMimeType(resp.getBody().getMimetype());
+			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
 			
 			// Update Redis after sync ORDS push to intermediate NFS storage. 
 			rService.updateJob(job); 
@@ -83,8 +84,8 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			);
 			
 			//TODO - Remove me for prod - Loads a dummy file instead of the one pulled from the object store.  
-			byte[] bytes = TestHelper.fetchFileResourceAsBytes("testfile.txt"); 
-			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(bytes, sessionUrl, bytes.length);
+			byte[] bytes = TestHelper.fetchFileResourceAsBytes("test.pdf"); 
+			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, bytes, sessionUrl);
 			JSONObject mResp = uploadResponse.get();
 			logger.info(mResp.toString());
 			
@@ -106,27 +107,35 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * 
 	 * Upload file content in chunks
 	 * 
+	 * Note: This method needs to live outside of the MSGraphService class as it calls 'mService.uploadChunk'. If this method lives
+	 * within the MSGraphService, the 'Retryable' uploadChunk fails to remain 'Retryable'.  
+	 * @param job 
+	 * 
 	 * @param content
 	 * @param uploadUrl
 	 * @param fileSize
 	 * @return
 	 * @throws Exception
 	 */
-	public CompletableFuture<JSONObject> uploadFileInChunks(byte[] content, String uploadUrl, long fileSize) throws Exception {
+	private CompletableFuture<JSONObject> uploadFileInChunks(Job job, byte[] content, String uploadUrl) throws Exception {
 
-		// Upload file in chunks
 		int fragSize = 320 * 1024;
+		long fileSize = content.length;
 		int numFragments = (int) ((fileSize / fragSize) + 1);
 		byte[] buffer = new byte[fragSize];
+		
+		// determines percentage complete increment for each chunk.
+		int uploadTick = 90 / numFragments;  
 
 		logger.info("FileSize being uploaded: " + fileSize);
 		logger.info("Number of fragments: " + numFragments);
+		logger.info("Upload chunk percentage increase: " + uploadTick);
 
 		int bytesRead;
 
 		JSONObject lastResponseObject = null;
-		
-		InputStream fileStream = new ByteArrayInputStream(content);   
+
+		InputStream fileStream = new ByteArrayInputStream(content);
 
 		try (BufferedInputStream bis = new BufferedInputStream(fileStream)) {
 
@@ -144,16 +153,24 @@ public class JobServiceImpl implements JobService, JobEventListener {
 				byte[] chunk = new byte[bytesRead];
 				System.arraycopy(buffer, 0, chunk, 0, bytesRead);
 
-				CompletableFuture<JSONObject> chunkResponse = mService.uploadChunk(uploadUrl, count, fileSize, chunk, fragSize, chunkSize);
+				CompletableFuture<JSONObject> chunkResponse = mService.uploadChunk(uploadUrl, count, fileSize, chunk,
+						fragSize, chunkSize);
 				lastResponseObject = chunkResponse.get();
 				
-				//TODO - HERE - if chunk successful, increment percentage complete. 
+				bytesRemaining = bytesRemaining - chunkSize;
 				
-				
+				// Report latest upload to Redis. 
+				job.setPercentageComplete( job.getPercentageComplete() + uploadTick );
+				if (job.getPercentageComplete() == 100) {
+					job.setEndDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
+					job.setBytesDelivered(fileSize - bytesRemaining);
+				}
+				this.rService.updateJob(job);
 
+				logger.info("Bytes remaining to be delivered = " + bytesRemaining); // here
 				logger.debug("Chunk " + count + " uploaded.");
 
-				bytesRemaining = bytesRemaining - chunkSize;
+				//bytesRemaining = bytesRemaining - chunkSize;
 				count++;
 			}
 		}

@@ -13,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "id", "guid", "correlationId", "applicationId",  "email", "ordsTimeout", "graphTimeout",
-	"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName", "filePath",
-	"mimeType" })
+		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName", "filePath",
+		"bytesDelivered", "mimeType" })
 @RedisHash(value="Job", timeToLive=7200L)
 @RequiredArgsConstructor
 /**
@@ -58,6 +58,10 @@ public class Job implements Serializable {
 	private String fileName;
 	@JsonProperty("filePath")
 	private String filePath;
+	@JsonProperty("fileSize")
+	private long fileSize = 0;
+	@JsonProperty("bytesDelivered")
+	private long bytesDelivered = 0;
 	@JsonProperty("mimeType")
 	private String mimeType;
 	
@@ -180,6 +184,26 @@ public class Job implements Serializable {
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
 	}
+	
+	@JsonProperty("fileSize")
+	public long getFileSize() {
+		return fileSize;
+	}
+
+	@JsonProperty("fileSize")
+	public void setFileSize(long fileSize) {
+		this.fileSize = fileSize;
+	}
+
+	@JsonProperty("bytesDelivered")
+	public long getBytesDelivered() {
+		return bytesDelivered;
+	}
+
+	@JsonProperty("bytesDelivered")
+	public void setBytesDelivered(long bytesDelivered) {
+		this.bytesDelivered = bytesDelivered;
+	}
 
 	@JsonProperty("mimeType")
 	public String getMimeType() {
@@ -198,7 +222,10 @@ public class Job implements Serializable {
 				+ ", graphSessionUrl=" + graphSessionUrl + ", error=" + error + ", lastErrorMessage=" + lastErrorMessage
 				+ ", startDeliveryDtm=" + startDeliveryDtm + ", endDeliveryDtm=" + endDeliveryDtm
 				+ ", percentageComplete=" + percentageComplete + ", fileName=" + fileName + ", filePath=" + filePath 
+				+ ", fileSize=" + fileSize
+				+ ", bytesDelivered=" + bytesDelivered
 				+ ", mimeType=" + mimeType
 				+ "]";
 	}
+
 }

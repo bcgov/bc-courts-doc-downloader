@@ -1,12 +1,12 @@
 openapi: 3.0.0
 info:
-  version: 0.0.1
-  title: Courts Document Downloader API
-  description: Courts File Download API 
+  version: 0.0.2
+  title: Document Predownload API
+  description: Document Predownload API 
 servers:
   - url: "http://localhost:8080"
 tags:
-  - name: Document Downloader API
+  - name: Document Predownload API
 paths:
   /document/upload:
     post:
@@ -62,42 +62,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ping_response"
-  /msgtest:
-   post:
-      summary: A MS Graph Test Operation. To be removed for prod. 
-      tags: 
-        - Test
-      description: A MS Graph Test Operation. To be removed for prod
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/msgtest_request"
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/test_response"
-  /ordstest:
-   post: 
-      summary: ORDS put file Test Operation. To be removed for prod. 
-      tags: 
-        - Test
-      description: ORDS put file Test Operation. To be removed for prod
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/filetransfer_request"
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ordsPush_response"               
 components:
   schemas:
     filetransfer_request:
@@ -165,33 +129,7 @@ components:
           type: string
         mimetype: 
           type: string
+        sizeval: 
+          type: string  
     ping_response:
       type: string
-    test_response:
-      type: object
-      properties:
-        result:
-          type: string
-        error: 
-          type: string    
-    msgtest_request:
-      type: object
-      required:
-        - email
-        - folder
-        - fileName
-        - data
-      properties:
-        email:
-          type: string
-          description: 'The email of the OneDrive user.'
-        folder:
-          type: string
-          description: 'The OneDrive folder name to write the test file to.'
-        fileName:
-          type: string
-          description: 'The name of the file to push with extension.'
-        data: 
-          type: string
-          format: byte
-          description: 'Base 64 encoded file data.'

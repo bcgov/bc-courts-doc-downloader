@@ -110,7 +110,7 @@ public class DocumentController implements DocumentApi {
 		resp.setEndDeliveryDtm(job.getEndDeliveryDtm());
 		resp.setFileName(job.getFileName());
 		resp.setFilePath(job.getFilePath());
-		resp.fileSize(12345L);
+		resp.fileSize(job.getFileSize());
 		resp.setMime(job.getMimeType());
 		resp.setError(job.getError());
 		resp.setLastErrorMessage(job.getLastErrorMessage());
