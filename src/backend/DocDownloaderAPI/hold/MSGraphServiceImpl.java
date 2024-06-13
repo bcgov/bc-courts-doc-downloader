@@ -45,15 +45,25 @@ public class MSGraphServiceImpl implements MSGraphService {
 	private static final Logger logger = LoggerFactory.getLogger(MSGraphServiceImpl.class);
 
 	private AppProperties props;
+
+	private final String emailRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
+			+ "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
+
+	private Pattern emailPattern;
 	
 	public MSGraphServiceImpl (AppProperties props) {
 		this.props = props;
 	}
+
+	@PostConstruct
+	public void init() {
+		emailPattern = Pattern.compile(emailRegex);
+	}
 	
 	/**
 	 * 
-	 * Create upload session. Only works with a token derived using OAuth2 Client credentials flow.  (e.g., Application request token directly 
-	 * without user intervention).  
+	 * Create upload session. Only works with a token derived using OAuth2 Authorization Code flow.  (e.g., token created 
+	 * on behalf of the user - aka 'Delegated').  
 	 * 
 	 * @param accessToken
 	 * @param fileFolder
@@ -62,7 +72,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 	 * @throws Exception
 	 */
 	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
-	public String createUploadSession(String accessToken, String fileFolder, String fileName) throws Exception {
+	public CompletableFuture<String> createUploadSession(String accessToken, String fileFolder, String fileName) throws Exception {
 		
 		logger.debug("Calling createUploadSession...retry count: " + RetrySynchronizationManager.getContext().getRetryCount());
 		logger.debug("Processing createUploadSession asynchronously with Thread {}", Thread.currentThread().getName());
@@ -95,7 +105,7 @@ public class MSGraphServiceImpl implements MSGraphService {
         if(statusCode.is2xxSuccessful()) {  
           
 	        JSONObject responseObject = HttpClientHelper.processResponse(statusCode.value(), response.getBody());
-	        return responseObject.getJSONObject("responseMsg").getString("uploadUrl");
+	        return CompletableFuture.completedFuture(responseObject.getJSONObject("responseMsg").getString("uploadUrl"));
         
         } else {
         	
@@ -120,7 +130,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 	 * @throws Exception
 	 */
 	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
-	public String createUploadSessionFromUserId(String accessToken, String userId, String fileFolder,
+	public CompletableFuture<String> createUploadSessionFromUserId(String accessToken, String userId, String fileFolder,
 				String fileName) throws Exception {	
 
 		logger.debug("Calling createUploadSessionFromUserId...retry count: "
@@ -157,7 +167,8 @@ public class MSGraphServiceImpl implements MSGraphService {
 		if (statusCode.is2xxSuccessful()) {
 
 			JSONObject responseObject = HttpClientHelper.processResponse(statusCode.value(), response.getBody());
-			return responseObject.getJSONObject("responseMsg").getString("uploadUrl");
+			return CompletableFuture
+					.completedFuture(responseObject.getJSONObject("responseMsg").getString("uploadUrl"));
 
 		} else {
 
@@ -167,12 +178,10 @@ public class MSGraphServiceImpl implements MSGraphService {
 			throw new Exception(errorMessage);
 		}
 	}
-	
-
 		
 	/**
 	 * 
-	 * Upload a file chunk
+	 * Upload a Chunk
 	 * 
 	 * @param uploadUrl
 	 * @param count
@@ -181,9 +190,9 @@ public class MSGraphServiceImpl implements MSGraphService {
 	 * @param fragSize
 	 * @param chunkSize
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 * 
-	 * Note: Presently Spring RestTemplate doesn't support uploading of file content. 
+	 * Note: Presently this method can not use Spring RestTemplate for uploading file content. 
 	 */
 	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<JSONObject> uploadChunk(String uploadUrl, int count, long fileSize, byte[] chunk, int fragSize, int chunkSize) throws Exception {
@@ -238,41 +247,57 @@ public class MSGraphServiceImpl implements MSGraphService {
 	/**
 	 * getUserId from email address. 
 	 * 
-	 * Application must have the following role(s) set to execute the 'users' search operation: User.Read.All.  
+	 * App must have the following role(s) set to execute the 'users' search operation: User.Read.All.  
 	 * 
 	 * @param accessToken
 	 * @param email
 	 * @return
-	 * @throws Exception
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws JSONException
 	 */
-	public String GetUserId(String accessToken, String email) throws Exception {
+	public CompletableFuture<JSONObject> GetUserId(String accessToken, String email) throws MalformedURLException, IOException, JSONException {
+	
+		if (!validateEmail(email)) {
+			
+			String jError = "{\"error\": {\"code\": \"Invalid Email format\",\"message\": \"Invalid Email format\"}}"; 
+			
+			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(HttpStatus.BAD_REQUEST.value(), jError)); 
+		}
 
 		String useridQuery = props.getMsgEndpointHost() + "v1.0/users('" + email + "')";
 
 		HttpURLConnection connection = null;
 		URL url = new URL(useridQuery);
 		connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestMethod("GET");
-		connection.setRequestProperty("Authorization", "Bearer " + accessToken);
-		connection.setRequestProperty("Accept", "*/*");
-
-		int responseCode = connection.getResponseCode();
+		connection.setRequestMethod("GET"); 
+	    connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+	    connection.setRequestProperty("Accept", "*/*");
+	    
+	    int responseCode = connection.getResponseCode();
 		String response = HttpClientHelper.getResponseStringFromConn(connection);
-
-		if (HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
-
-			JSONObject jResponse = HttpClientHelper.processResponse(responseCode, response);
-			return jResponse.getJSONObject("responseMsg").getString("id");
-
+		
+		if (!HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
+			logger.error("GetUserId failure. Response: " + response);
+			return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response)); 
 		} else {
-
-			JSONObject responseObject = HttpClientHelper.processResponse(responseCode, response);
-			String errorMessage = "Error creating upload session from email: "
-					+ responseObject.getJSONObject("responseMsg").getString("message");
-			logger.error(errorMessage);
-			throw new Exception(errorMessage);
+			logger.debug("GetUserId response: " + response);
 		}
 
+		return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response));
+
+	}
+	
+	/**
+	 * 
+	 * Utility function to validate email format. 
+	 * 
+	 * @param email
+	 * @return
+	 */
+	private boolean validateEmail(String email) {
+		Matcher matcher = emailPattern.matcher(email);
+	    return matcher.matches();
 	}
 
 }

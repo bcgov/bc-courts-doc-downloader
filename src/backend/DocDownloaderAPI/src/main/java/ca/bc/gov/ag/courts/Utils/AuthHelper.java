@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Base64;
-import java.util.concurrent.CompletableFuture;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +22,10 @@ import ca.bc.gov.ag.courts.config.AppProperties;
 import jakarta.annotation.PostConstruct;
 
 /**
- * Helper methods for acquiring tokens, etc.
+ * Helper methods for acquiring tokens, setting basic auth headers, etc.
+ * 
+ * @author 176899
+ * 
  */
 @Component
 public class AuthHelper {
@@ -33,6 +35,7 @@ public class AuthHelper {
     private String clientId;
     private String secretKey;
     private String authority;
+    private String msgEndpoint;
     
 	private AppProperties props; 
 	
@@ -45,6 +48,7 @@ public class AuthHelper {
         clientId = props.getMsgClientId();
         authority = props.getMsgAuthority();
         secretKey = props.getMsgSecretKey();
+        msgEndpoint = props.getMsgEndpointHost();
     }
     
     /** 
@@ -55,16 +59,16 @@ public class AuthHelper {
      * @throws MalformedURLException
      * @throws IOException
      * @throws JSONException
-     */
-	public CompletableFuture<JSONObject> GetAccessToken() throws MalformedURLException, IOException, JSONException {
+     */ 
+	public String GetAccessToken() throws Exception {
 		
-		logger.info("AuthHelper.GetAccessToken called.");
+		logger.debug("AuthHelper.GetAccessToken called.");
 
 		String parameters = "client_id="
 				+ URLEncoder.encode(this.clientId, java.nio.charset.StandardCharsets.UTF_8.toString())
 				+ "&client_secret="
 				+ URLEncoder.encode(this.secretKey, java.nio.charset.StandardCharsets.UTF_8.toString()) + "&scope="
-				+ URLEncoder.encode("https://graph.microsoft.com/.default",
+				+ URLEncoder.encode(this.msgEndpoint + ".default",
 						java.nio.charset.StandardCharsets.UTF_8.toString())
 				+ "&grant_type=client_credentials";
 
@@ -89,8 +93,13 @@ public class AuthHelper {
 		} else {
 			logger.debug("Token request response: " + response);
 		}
-
-		return CompletableFuture.completedFuture(HttpClientHelper.processResponse(responseCode, response));
+		
+		JSONObject jResponse = HttpClientHelper.processResponse(responseCode, response);
+		
+		if (jResponse.getInt("responseCode") == HttpStatus.OK.value())  
+			return jResponse.getJSONObject("responseMsg").getString("access_token");
+		else 
+			throw new Exception(jResponse.getJSONObject("responseMsg").getJSONObject("error").getString("message"));
 
 	}
 	

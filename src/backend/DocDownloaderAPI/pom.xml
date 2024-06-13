@@ -13,10 +13,9 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>DocDownloaderAPI</name>
-	<description>Springboot document downloader with support for Microsoft Graph Java SDK</description>
+	<description>Springboot Document Predownload API with support for Microsoft Graph Java SDK</description>
 	<properties>
 		<java.version>17</java.version>
-		
 		<default-package>ca.bc.gov.ag.courts</default-package>
 		<httpclient-version>4.5.14</httpclient-version>
 		<org-json-version>20090211</org-json-version>

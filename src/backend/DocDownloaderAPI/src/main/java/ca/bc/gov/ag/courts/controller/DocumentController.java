@@ -49,13 +49,6 @@ public class DocumentController implements DocumentApi {
 		
 		logger.info("Heard a call to the document upload endpoint. ");
 		
-//      Check if correlationId (jobId) already exists
-//		if (rService.jobExists(xCorrelationId)) {
-//			logger.warn("Requested job, " + xCorrelationId + " already exists. Job not created.");
-//			resp.setResult("Job already exists");
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
-//		}
-		
 		// Create transfer guid for request. 
 		String transferGuid = InetUtils.getGuidWODash();
 		
@@ -64,11 +57,12 @@ public class DocumentController implements DocumentApi {
 		job.setGuid(Base64.getEncoder().encodeToString(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
 		job.setApplicationId(props.getOrdsApplicationId());
 		job.setGraphSessionUrl(null);
+		job.setEmail(filetransferRequest.getEmail());
 		job.setError(false);
 		job.setLastErrorMessage(null);
 		job.setStartDeliveryDtm(null);
 		job.setEndDeliveryDtm(null);
-		job.setPercentageComplete(0);
+		job.setPercentageComplete(0); 
 		job.setFilePath(filetransferRequest.getFilePath());
 		job.setFileName(null); // available after ORDS call 
 		job.setMimeType(null); // available after ORDS call
@@ -109,7 +103,7 @@ public class DocumentController implements DocumentApi {
 		resp.setEndDeliveryDtm(job.getEndDeliveryDtm());
 		resp.setFileName(job.getFileName());
 		resp.setFilePath(job.getFilePath());
-		resp.fileSize(12345L);
+		resp.fileSize(job.getFileSize());
 		resp.setMime(job.getMimeType());
 		resp.setError(job.getError());
 		resp.setLastErrorMessage(job.getLastErrorMessage());
