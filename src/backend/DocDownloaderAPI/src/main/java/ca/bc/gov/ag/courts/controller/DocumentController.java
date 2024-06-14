@@ -90,8 +90,8 @@ public class DocumentController implements DocumentApi {
 			e.printStackTrace();
 		}
 			
-		// Return 404 in the event the transferId is not found or expired. 
-		if (response == null) {
+		// If the response is a 404, just return the same (Occurs when transferId not found or expired). 
+		if (HttpStatus.NOT_FOUND == response.getStatusCode()) {
 			return new ResponseEntity<FiletransferstatusResponse>(HttpStatus.NOT_FOUND);
 		}
 	
