@@ -74,6 +74,7 @@ public class AuthHelper {
 
 		HttpURLConnection connection = null;
 		URL url = new URL(this.authority + "/oauth2/v2.0/token");
+		logger.debug("GetAccessToken calling MS endpoint " + url.toString());
 		connection = (HttpURLConnection) url.openConnection();
 		connection.setRequestMethod("POST");
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
