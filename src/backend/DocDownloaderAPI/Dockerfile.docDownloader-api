@@ -22,6 +22,7 @@ ARG SERVICE_NAME
 
 RUN apk update
 RUN apk add busybox-extras
+RUN apk --no-cache add curl
 
 EXPOSE 8080
 
