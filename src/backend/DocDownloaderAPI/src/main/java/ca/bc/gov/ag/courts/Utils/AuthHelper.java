@@ -73,7 +73,7 @@ public class AuthHelper {
 				+ "&grant_type=client_credentials";
 
 		HttpURLConnection connection = null;
-		URL url = new URL(this.authority + "/oauth2/v2.0/token");
+		URL url = new URL(this.authority + "oauth2/v2.0/token");
 		logger.debug("GetAccessToken calling MS endpoint " + url.toString());
 		connection = (HttpURLConnection) url.openConnection();
 		connection.setRequestMethod("POST");
