@@ -14,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -69,23 +71,6 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 
 		return CompletableFuture.completedFuture(responseEntity);
 	}
-	
-	///TODO - This needs protection from retrying when the transferId is not found (404) otherwise it will retry the max retries. 
-	@Override
-	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
-	public CompletableFuture<ResponseEntity<Job>> getJob(String jobId) throws Exception {
-		
-		logger.debug("Redis Service: Calling getJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
-		
-		URI uri = new URI(this.redisUrl + "jobs/" + jobId);
-
-		HttpEntity<String> entity = new HttpEntity<String>(
-				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));
-
-		ResponseEntity<Job> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, Job.class);
-
-		return CompletableFuture.completedFuture(responseEntity);
-	}
 
 	@Override
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
@@ -135,6 +120,42 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 
 		return CompletableFuture.completedFuture(responseEntity);
 		
+	}
+	
+	/**
+	 * The following is the only Async method as it is called directly from the document controller. All other methods in this service are called from the 
+	 * Async Job processor which makes them Async automatically. 
+	 */
+	@Override
+	@Async			
+	@Retryable(retryFor = Exception.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
+	public CompletableFuture<ResponseEntity<Job>> getJob(String jobId) throws Exception {
+		
+		logger.debug("Redis Service: Calling getJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
+		
+		URI uri = new URI(this.redisUrl + "jobs/" + jobId);
+
+		HttpEntity<String> entity = new HttpEntity<String>(
+				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));
+
+		ResponseEntity<Job> responseEntity = null;
+		try {
+			responseEntity = restTemplate.exchange(uri, HttpMethod.GET, entity, Job.class);
+		} catch (Exception ex) {
+			
+			// This block watches for 404 response - We don't want this status code to cause the multiple retries and 
+			// hold up the response to the client. Simply return a 404 and do no further processing. 
+			if (ex instanceof HttpClientErrorException) {
+				HttpClientErrorException _ex = (HttpClientErrorException)ex;
+				if (HttpStatus.NOT_FOUND == _ex.getStatusCode()) {
+					return CompletableFuture.completedFuture(new ResponseEntity<Job>(HttpStatus.NOT_FOUND));
+				}
+			} else {
+				throw ex; 
+			}
+		}
+
+		return CompletableFuture.completedFuture(responseEntity);
 	}
 
 	/**

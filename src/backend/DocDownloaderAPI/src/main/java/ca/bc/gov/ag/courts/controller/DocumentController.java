@@ -7,6 +7,7 @@ import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,11 +50,11 @@ public class DocumentController implements DocumentApi {
 		
 		logger.info("Heard a call to the document upload endpoint. ");
 		
-		// Create transfer guid for request. 
-		String transferGuid = InetUtils.getGuidWODash();
+		// Create transferId for request. 
+		String transferId = InetUtils.getGuidWODash();
 		
 		Job job = new Job();
-		job.setId(transferGuid); // note mapping here. Job Id is transfer Id. Job status may be found using transfer Id.   
+		job.setId(transferId); // note mapping here. Job Id is transfer Id. Job status may be found using transfer Id.   
 		job.setGuid(Base64.getEncoder().encodeToString(filetransferRequest.getObjGuid())); // guid sent as b64 and mapped to byte[] in request object. 
 		job.setApplicationId(props.getOrdsApplicationId());
 		job.setGraphSessionUrl(null);
@@ -64,13 +65,13 @@ public class DocumentController implements DocumentApi {
 		job.setEndDeliveryDtm(null);
 		job.setPercentageComplete(0); 
 		job.setFilePath(filetransferRequest.getFilePath());
-		job.setFileName(null); // available after ORDS call 
-		job.setMimeType(null); // available after ORDS call
+		job.setFileName(null); 
+		job.setMimeType(null); 
 		
 		jService.processDocRequest(job); // trip of the processing in this async thread. 
 		
 		resp.setObjGuid(Base64.getEncoder().encodeToString(filetransferRequest.getObjGuid()));
-		resp.setTransferId(transferGuid);
+		resp.setTransferId(transferId);
 		
 		return new ResponseEntity<FiletransferResponse>(resp, HttpStatus.ACCEPTED);
 	}
@@ -79,36 +80,46 @@ public class DocumentController implements DocumentApi {
 	public ResponseEntity<FiletransferstatusResponse> documentStatusTransferIdGet(
 			@Parameter(name = "transferId", description = "The document transfer Id", required = true, in = ParameterIn.PATH) @PathVariable("transferId") String transferId) {
 
+		MDC.put("transferid", transferId + "_poll");
+		
 		logger.info("Heard a call to the document status endpoint for transferId: " + transferId);
 
-		ResponseEntity<Job> response = null;
 		try {
-			CompletableFuture<ResponseEntity<Job>> _job = rService.getJob(transferId);
-			response = _job.get();
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			e.printStackTrace();
-		}
-			
-		// Return 404 in the event the transferId is not found or expired. 
-		if (response == null) {
-			return new ResponseEntity<FiletransferstatusResponse>(HttpStatus.NOT_FOUND);
-		}
+		
+			ResponseEntity<Job> response = null;
+			try {
+				CompletableFuture<ResponseEntity<Job>> _job = rService.getJob(transferId);
+				response = _job.get();
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				e.printStackTrace();
+			}
+				
+			// If the response is a 404, just return the same (Occurs when transferId not found or expired). 
+			if (HttpStatus.NOT_FOUND == response.getStatusCode()) {
+				return new ResponseEntity<FiletransferstatusResponse>(HttpStatus.NOT_FOUND);
+			}
+		
+			Job job = response.getBody();
 	
-		Job job = response.getBody();
-
-		FiletransferstatusResponse resp = new FiletransferstatusResponse();
-		resp.setPercentTransfered(job.getPercentageComplete());
-		resp.setStartDeliveryDtm(job.getStartDeliveryDtm());
-		resp.setEndDeliveryDtm(job.getEndDeliveryDtm());
-		resp.setFileName(job.getFileName());
-		resp.setFilePath(job.getFilePath());
-		resp.fileSize(job.getFileSize());
-		resp.setMime(job.getMimeType());
-		resp.setError(job.getError());
-		resp.setLastErrorMessage(job.getLastErrorMessage());
-
-		return new ResponseEntity<FiletransferstatusResponse>(resp, HttpStatus.OK);
+			FiletransferstatusResponse resp = new FiletransferstatusResponse();
+			resp.setPercentTransfered(job.getPercentageComplete());
+			resp.setStartDeliveryDtm(job.getStartDeliveryDtm());
+			resp.setEndDeliveryDtm(job.getEndDeliveryDtm());
+			resp.setFileName(job.getFileName());
+			resp.setFilePath(job.getFilePath());
+			resp.fileSize(job.getFileSize());
+			resp.setMime(job.getMimeType());
+			resp.setError(job.getError());
+			resp.setLastErrorMessage(job.getLastErrorMessage());
+			
+			
+			return new ResponseEntity<FiletransferstatusResponse>(resp, HttpStatus.OK);
+		
+		
+		} finally {
+			MDC.remove("transferid");
+		}
 
 	}
 
