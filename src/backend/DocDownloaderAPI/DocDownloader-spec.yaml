@@ -92,6 +92,8 @@ components:
     filetransferstatus_response:
       type: object
       properties:
+        transferId: 
+          type: string
         percentTransfered:
           type: integer
         startDeliveryDtm: 

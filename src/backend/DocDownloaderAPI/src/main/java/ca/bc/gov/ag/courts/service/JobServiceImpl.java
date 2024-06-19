@@ -61,6 +61,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		this.mService = mService; 
 	}
 
+// TODO - Restore this code to revert to MS Graph usage
 // original - Replace this method once the connection to MS Graph has been restored. 	
 //	/**
 //	 * 
@@ -174,6 +175,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
         }
     }
 
+// TODO - Restore this code to revert to MS Graph usage	
 // Original - Replace this method once the connection to MS Graph has been restored. 	
 //	/**
 //	 * 
