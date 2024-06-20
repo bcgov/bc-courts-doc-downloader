@@ -108,7 +108,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("test.pdf");
 //			byte[] bytes = TestHelper.fetchFileResourceAsBytes("15394_3M.pdf");
 //			
-//			//TODO - remove this next line once the NFS solution has been implemented 
+//			//TODO - Remove this next line once the NFS solution has been implemented 
 //			job.setFileSize(bytes.length);
 //			
 //			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, bytes, sessionUrl);
@@ -345,5 +345,26 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			logger.error("Failed to update Job after encountering error.");
 			e1.printStackTrace();
 		}
+	}
+	
+	/**
+	 * 
+	 * S3 delivery callback 
+	 * 
+	 * @param msg
+	 */
+	public void onS3DocumentArrival(String msg) {
+		logger.debug("Received a message on S3DocumentArrival: " + msg);
+		logger.debug("Initiating MS Graph push");
+	}
+	
+	/**
+	 * 
+	 * S3 timeout callback
+	 * 
+	 * @param msg
+	 */
+	public void onS3DocumentTimeout(String msg) {
+		logger.debug("Received a timeout message on S3DocumentTimeout: " + msg);
 	}
 }

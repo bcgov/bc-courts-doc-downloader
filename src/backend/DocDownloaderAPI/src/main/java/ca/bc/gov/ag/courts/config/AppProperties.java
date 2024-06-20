@@ -79,6 +79,18 @@ public class AppProperties {
 	
 	@Value("${redis.client.password}")
 	private String redisClientPassword;
+	
+	@Value("${s3.access.endpoint}")
+	private String s3AccessEndpoint;
+	
+	@Value("${s3.access.bucket}")
+	private String s3AccessBucket;
+	
+	@Value("${s3.access.keyid}")
+	private String s3AccessKeyid;
+	
+	@Value("${s3.access.secretkey}")
+	private String s3AccessSecretkey;
 
 	public String getApplicationName() {
 		return applicationName;
@@ -270,6 +282,38 @@ public class AppProperties {
 
 	public void setRedisClientPassword(String redisClientPassword) {
 		this.redisClientPassword = redisClientPassword;
+	}
+
+	public String getS3AccessEndpoint() {
+		return s3AccessEndpoint;
+	}
+
+	public void setS3AccessEndpoint(String s3AccessEndpoint) {
+		this.s3AccessEndpoint = s3AccessEndpoint;
+	}
+
+	public String getS3AccessBucket() {
+		return s3AccessBucket;
+	}
+
+	public void setS3AccessBucket(String s3AccessBucket) {
+		this.s3AccessBucket = s3AccessBucket;
+	}
+
+	public String getS3AccessKeyid() {
+		return s3AccessKeyid;
+	}
+
+	public void setS3AccessKeyid(String s3AccessKeyid) {
+		this.s3AccessKeyid = s3AccessKeyid;
+	}
+
+	public String getS3AccessSecretkey() {
+		return s3AccessSecretkey;
+	}
+
+	public void setS3AccessSecretkey(String s3AccessSecretkey) {
+		this.s3AccessSecretkey = s3AccessSecretkey;
 	}
 
 }
