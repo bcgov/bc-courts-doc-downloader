@@ -16,5 +16,7 @@ import ca.bc.gov.ag.courts.model.Job;
 public interface JobService {
 	
 	public void processDocRequest(Job job);
+	public void onS3DocumentArrival(String msg);
+	public void onS3DocumentTimeout(String msg);
 	
 }
