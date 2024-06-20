@@ -10,10 +10,10 @@ tags:
 paths:
   /document/upload:
     post:
-      summary: File Tranfer Request
+      summary: File tranfer Request
       tags:
         - File Transfer
-      description: File Transfer Request
+      description: File transfer Request
       requestBody:
         description: File transfer request
         required: true
@@ -28,6 +28,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/filetransfer_response"
+  /document/terminate:
+    post:
+      summary: File tranfer termination
+      tags:
+        - File Transfer
+      description: File transfer termination
+      requestBody:
+        description: File transfer termination 
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fileterminate_request"
+      responses:
+        '202':
+          description: 'Accepted for processing'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fileterminate_response"              
   /document/status/{transferId}:
    get:
       summary: Document status endpoint
@@ -124,6 +144,18 @@ components:
         mime: 
           type: string
           description: File mime type
+    fileterminate_request:
+      type: array
+      items:
+          type: object
+          properties:
+            transferId:
+             type: string
+    fileterminate_response:
+      type: object
+      properties:
+        response: 
+          type: string         
     ordsPush_response:
       type: object
       properties:
