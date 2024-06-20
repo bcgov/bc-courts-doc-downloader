@@ -4,7 +4,10 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import javax.validation.Valid;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -18,6 +21,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import ca.bc.gov.ag.courts.Utils.AuthHelper;
 import ca.bc.gov.ag.courts.Utils.TestHelper;
 import ca.bc.gov.ag.courts.Utils.TimeHelper;
+import ca.bc.gov.ag.courts.api.model.FileterminateRequestInner;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
 import ca.bc.gov.ag.courts.listener.JobEventListener;
 import ca.bc.gov.ag.courts.model.Job; 
@@ -366,5 +370,18 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 */
 	public void onS3DocumentTimeout(String msg) {
 		logger.debug("Received a timeout message on S3DocumentTimeout: " + msg);
+	}
+
+	@Override
+	@Async
+	public void processTerminate(List<@Valid FileterminateRequestInner> request) {
+		for (FileterminateRequestInner element: request) {
+			try {
+				rService.deleteJob(element.getTransferId());
+			} catch (Exception e) {
+				logger.error("processTerminate: Unable to delete transferId, " + element.getTransferId() + ". Error: " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
 	}
 }

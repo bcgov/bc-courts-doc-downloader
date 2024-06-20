@@ -97,7 +97,23 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 		HttpEntity<Job> entity = new HttpEntity<Job>(job,
 				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));
 
-		ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+		
+		ResponseEntity<String> responseEntity = null;
+		try {
+			
+			responseEntity = restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+			
+		} catch (HttpClientErrorException ce) {
+			
+			// If the response is a 404, or 400 from Redis Client, just return and don't continue to retry. 
+			// This will occur when a download is terminated while still running.  
+			if (HttpStatus.NOT_FOUND == ce.getStatusCode() || HttpStatus.BAD_REQUEST == ce.getStatusCode()) {
+				return CompletableFuture.completedFuture(
+						new ResponseEntity<String>("Not found", HttpStatus.NOT_FOUND));
+			} else {
+				throw ce;
+			}
+		}	
 
 		return CompletableFuture.completedFuture(responseEntity);
 	}
@@ -106,17 +122,28 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
 	public CompletableFuture<ResponseEntity<String>> deleteJob(String jobId) throws Exception {
 		
-		/**
-		 * Returns 404 NOT FOUND if jobId doesn't exist. 
-		 */
-		
 		logger.debug("Redis Service: Calling deleteJob... retry count " + RetrySynchronizationManager.getContext().getRetryCount());
 		URI uri = new URI(this.redisUrl + "job/" + jobId);
 
 		HttpEntity<Job> entity = new HttpEntity<Job>(
 				AuthHelper.createBasicAuthHeaders(props.getRedisClientUsername(), props.getRedisClientPassword()));
 
-		ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
+		ResponseEntity<String> responseEntity = null;
+		try {
+			
+			responseEntity = restTemplate.exchange(uri, HttpMethod.DELETE, entity, String.class);
+		
+		} catch (HttpClientErrorException ce) {
+				
+			// If the response is a 404 from Redis Client, just return and don't continue to retry.
+			// This will occur when a download is terminated while still running. 
+			if (HttpStatus.NOT_FOUND == ce.getStatusCode()) {
+				return CompletableFuture.completedFuture(
+						new ResponseEntity<String>("Not found", HttpStatus.NOT_FOUND));
+			} else {
+				throw ce;
+			}
+		}
 
 		return CompletableFuture.completedFuture(responseEntity);
 		
