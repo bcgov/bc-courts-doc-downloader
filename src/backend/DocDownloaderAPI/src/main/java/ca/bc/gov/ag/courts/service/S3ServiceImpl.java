@@ -2,6 +2,7 @@ package ca.bc.gov.ag.courts.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -19,6 +20,7 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Bucket;
+import jakarta.annotation.PostConstruct;
 
 /**
  * 
@@ -38,6 +40,11 @@ public class S3ServiceImpl implements S3Service {
     public S3ServiceImpl (MinioS3Utils minioS3Utils) {
     	this.minioS3Utils = minioS3Utils; 
     }
+    
+    @PostConstruct
+	public void init() throws UnknownHostException {
+		logger.info("S3 Service started.");
+	}
 
     @Override
     public boolean bucketExists(String bucketName) throws InvalidKeyException, ErrorResponseException, InsufficientDataException, InternalException, InvalidResponseException, NoSuchAlgorithmException, ServerException, XmlParserException, IllegalArgumentException, IOException {

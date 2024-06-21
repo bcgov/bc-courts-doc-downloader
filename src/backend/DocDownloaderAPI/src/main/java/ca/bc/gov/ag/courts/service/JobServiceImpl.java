@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,9 @@ import ca.bc.gov.ag.courts.Utils.TimeHelper;
 import ca.bc.gov.ag.courts.api.model.FileterminateRequestInner;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
 import ca.bc.gov.ag.courts.listener.JobEventListener;
-import ca.bc.gov.ag.courts.model.Job; 
+import ca.bc.gov.ag.courts.model.Job;
+import io.minio.MinioClient;
+import jakarta.annotation.PostConstruct; 
 
 /**
  * 
@@ -34,12 +37,12 @@ import ca.bc.gov.ag.courts.model.Job;
  * 
  * Steps: 
  * 
- * 	1.) ORDS call is made for the document which returns synchronously. 
- *  2.) Validate the file has arrived on the intermediate drive location. 
- *  3.) Request the file upload session URL from MS Graph.
+ * 	1.) ORDS call is made for document which returns synchronously. 
+ *  2.) Validate the file has arrived on the intermediate S3 drive location. 
+ *  3.) Request a file upload session URL from MS Graph.
  *  4.) Sequentially upload the file in chunks until complete. 
  * 
- * As single access token is required to initiate the upload session only.  
+ * As single access token is required to initiate the MS Graph Upload session only.  
  * 
  * @author 176899
  *
@@ -62,11 +65,17 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		this.rService = rService; 
 		this.oService = oService;
 		this.aService = aService; 
-		this.mService = mService; 
+		this.mService = mService;
 	}
+	
+	@PostConstruct
+	private void postConstruct() {
+		logger.info("JobService service started.");
+	}
+	
 
-// TODO - Restore this code to revert to MS Graph usage
-// original - Replace this method once the connection to MS Graph has been restored. 	
+// TODO - Restore this code to revert to MS Graph usage	
+// Original - Replace this method once the connection to MS Graph has been restored. 		
 //	/**
 //	 * 
 //	 * Main processor  
@@ -91,14 +100,16 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //			CompletableFuture<ResponseEntity<OrdsPushResponse>> _resp = oService.pushFile(job); 
 //			ResponseEntity<OrdsPushResponse> resp =  _resp.get();
 //			
+//			logger.debug("Filename received from ORDS: " + resp.getBody().getFilename());
+//			
 //			job.setPercentageComplete(10);
 //			job.setFileName(resp.getBody().getFilename());  
 //			job.setMimeType(resp.getBody().getMimetype());
 //			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
 //			
 //			// Update Redis after sync ORDS push to intermediate NFS storage. 
-//			rService.updateJob(job); 
-//		   
+//			rService.updateJob(job);
+//			
 //			// TODO - Check for the presence of the file on the NFS. (requires connectivity - See SCV-456)  
 //			
 //			// Initiate MS Graph upload process by acquiring the session URL. (requires connectivity for O/S - See SCV-457). 
@@ -118,7 +129,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, bytes, sessionUrl);
 //			JSONObject mResp = uploadResponse.get();
 //			logger.debug(mResp.toString());
-//            
+//			
 //            this.onCompletion(job); // success callback
 //            
 //        } catch (Exception e) {
@@ -202,7 +213,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //		int numFragments = (int) ((fileSize / fragSize) + 1);
 //		byte[] buffer = new byte[fragSize];
 //		
-//		// determines percentage complete increment for each chunk.
+//		// Percentage complete increment for each chunk.
 //		int uploadTick = 90 / numFragments;  
 //
 //		logger.debug("FileSize being uploaded: " + fileSize);
@@ -237,18 +248,31 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //				
 //				bytesRemaining = bytesRemaining - chunkSize;
 //				
-//				// Report latest upload to Redis. 
-//				job.setPercentageComplete( job.getPercentageComplete() + uploadTick );
-//				if (job.getPercentageComplete() == 100) {
-//					job.setEndDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
-//					job.setBytesDelivered(fileSize - bytesRemaining);
-//				}
-//				this.rService.updateJob(job);
-//
-//				logger.debug("Chunk " + count + " uploaded.");
-//				logger.debug("Bytes remaining to be delivered = " + bytesRemaining); // here
+//				// If transferId still exists (and hasn't been cancelled by the user), continue processing, otherwise
+//				// cancel upload session and break while loop. 
+//				if (jobExists(job.getId())) {
 //				
-//				count++;
+//					// Report latest upload to Redis. 
+//					job.setPercentageComplete( job.getPercentageComplete() + uploadTick );
+//					if (job.getPercentageComplete() == 100) {
+//						job.setEndDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
+//						job.setBytesDelivered(fileSize - bytesRemaining);
+//					}
+//					this.rService.updateJob(job);
+//	
+//					logger.debug("Chunk " + count + " uploaded.");
+//					logger.debug("Bytes remaining to be delivered = " + bytesRemaining);
+//					
+//					count++;
+//					
+//				} else {
+//					
+//					logger.warn("Cancelling MS Graph upload session for transferId, " + job.getId());
+//					
+//					mService.deleteUploadSession(uploadUrl, job.getId());
+//					break;
+//					
+//				}
 //			}
 //		}
 //
@@ -382,6 +406,27 @@ public class JobServiceImpl implements JobService, JobEventListener {
 				logger.error("processTerminate: Unable to delete transferId, " + element.getTransferId() + ". Error: " + e.getMessage());
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	/**
+	 * 
+	 * Test to determine if jobId already exists
+	 *  
+	 */
+	private boolean jobExists(String jobId) {
+		
+		ResponseEntity<Job> jobTest;
+		try {
+			CompletableFuture<ResponseEntity<Job>> j = rService.getJob(jobId);
+			jobTest = j.get();
+			if (jobTest.getStatusCode() == HttpStatus.NOT_FOUND) {
+				return false; 
+			} else {
+				return true;
+			}
+		} catch (Exception e) {
+			return false; 
 		}
 	}
 }

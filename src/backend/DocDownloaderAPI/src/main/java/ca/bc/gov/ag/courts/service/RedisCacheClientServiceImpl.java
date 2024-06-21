@@ -53,7 +53,7 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	@PostConstruct
 	public void init() throws UnknownHostException {
 		redisUrl = "http://" + InetUtils.getIPForHostname(props.getRedisClientHost()) + ":" + props.getRedisClientPort() + "/";
-		logger.info("Resolved redis client as " + redisUrl);
+		logger.info("Resolved Redis Client started.");
 	}
 	
 	
@@ -185,25 +185,4 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 		return CompletableFuture.completedFuture(responseEntity);
 	}
 
-	/**
-	 * 
-	 * Test to determine if jobId already exists
-	 *  
-	 */
-	@Override
-	public boolean jobExists(String jobId) {
-		
-		ResponseEntity<Job> jobTest;
-		try {
-			CompletableFuture<ResponseEntity<Job>> j = this.getJob(jobId);
-			jobTest = j.get();
-			if (jobTest.getStatusCode() == HttpStatus.NOT_FOUND) {
-				return false; 
-			} else {
-				return true;
-			}
-		} catch (Exception e) {
-			return false; 
-		}
-	}
 }

@@ -1,17 +1,12 @@
 package ca.bc.gov.ag.courts.service;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +43,11 @@ public class MSGraphServiceImpl implements MSGraphService {
 	
 	public MSGraphServiceImpl (AppProperties props) {
 		this.props = props;
+	}
+	
+	@PostConstruct
+	private void postConstruct() {
+		logger.info("MS Graph Service started.");
 	}
 	
 	/**
@@ -271,6 +271,42 @@ public class MSGraphServiceImpl implements MSGraphService {
 					+ responseObject.getJSONObject("responseMsg").getString("message");
 			logger.error(errorMessage);
 			throw new Exception(errorMessage);
+		}
+
+	}
+
+	/**
+	 * 
+	 * Deletes an upload session. 
+	 * 
+	 */
+	public boolean deleteUploadSession(String uploadUrl, String transferId) {
+
+		URL url; HttpURLConnection connection = null;
+		int responseCode = HttpStatus.INTERNAL_SERVER_ERROR.value(); 
+		
+		try {
+			
+			url = new URL(uploadUrl);
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("DELETE");
+			connection.setRequestProperty("Accept", "*/*");
+			responseCode = connection.getResponseCode();
+			
+			if (HttpStatus.valueOf(responseCode).is2xxSuccessful()) {			
+				logger.debug("Delete session successful for transferId, " + transferId);
+			} else {
+				logger.debug("Delete session failure for transferId, " + transferId + ". Response code " + responseCode);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		if (HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
+			return true;
+		} else { 
+			return false; 
 		}
 
 	}
