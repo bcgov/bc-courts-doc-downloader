@@ -1,5 +1,6 @@
 package ca.bc.gov.ag.courts.service;
 
+import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -12,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import ca.bc.gov.ag.courts.Utils.InetUtils;
 import ca.bc.gov.ag.courts.config.AppProperties;
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class S3PollerService {
@@ -24,6 +27,11 @@ public class S3PollerService {
 	
 	public S3PollerService(AppProperties props, S3Service sService) {
 		this.sService = sService; 
+	}
+	
+	@PostConstruct
+	public void init() throws UnknownHostException {
+		logger.info("S3 Poller Service started.");
 	}
 	
 	/**

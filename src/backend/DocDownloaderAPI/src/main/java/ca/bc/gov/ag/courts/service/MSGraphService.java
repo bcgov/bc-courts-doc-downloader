@@ -21,4 +21,5 @@ public interface MSGraphService {
 	public String createUploadSessionFromUserId(String accessToken, String userId, String fileFolder, String fileName) throws Exception;
 	public CompletableFuture<JSONObject> uploadChunk(String uploadUrl, int count, long fileSize, byte[] chunk, int fragSize, int chunkSize) throws Exception;
 	public String GetUserId(String accessToken, String email) throws Exception;
+	public boolean deleteUploadSession(String uploadUrl, String transferId);
 }
