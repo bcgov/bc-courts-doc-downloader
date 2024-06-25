@@ -1,7 +1,6 @@
 package ca.bc.gov.ag.courts.controller;
 
 import java.util.Base64;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.Valid;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ca.bc.gov.ag.courts.Utils.InetUtils;
 import ca.bc.gov.ag.courts.api.DocumentApi;
 import ca.bc.gov.ag.courts.api.model.FileterminateRequest;
-import ca.bc.gov.ag.courts.api.model.FileterminateRequestInner;
 import ca.bc.gov.ag.courts.api.model.FileterminateResponse;
 import ca.bc.gov.ag.courts.api.model.FiletransferRequest;
 import ca.bc.gov.ag.courts.api.model.FiletransferResponse;
