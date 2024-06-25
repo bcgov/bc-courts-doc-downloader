@@ -145,12 +145,14 @@ components:
           type: string
           description: File mime type
     fileterminate_request:
-      type: array
-      items:
-          type: object
-          properties:
-            transferId:
-             type: string
+              description: A list of transferIds to cancel
+              required:
+               - transferIds
+              properties:
+                transferIds:
+                   type: array
+                   items:
+                     type: string      
     fileterminate_response:
       type: object
       properties:
