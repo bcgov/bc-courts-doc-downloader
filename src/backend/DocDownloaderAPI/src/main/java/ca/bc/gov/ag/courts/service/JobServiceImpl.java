@@ -1,15 +1,10 @@
 package ca.bc.gov.ag.courts.service;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.Valid;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -20,13 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 import ca.bc.gov.ag.courts.Utils.AuthHelper;
-import ca.bc.gov.ag.courts.Utils.TestHelper;
 import ca.bc.gov.ag.courts.Utils.TimeHelper;
-import ca.bc.gov.ag.courts.api.model.FileterminateRequestInner;
+import ca.bc.gov.ag.courts.api.model.FileterminateRequest;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
 import ca.bc.gov.ag.courts.listener.JobEventListener;
 import ca.bc.gov.ag.courts.model.Job;
-import io.minio.MinioClient;
 import jakarta.annotation.PostConstruct; 
 
 /**
@@ -398,12 +391,15 @@ public class JobServiceImpl implements JobService, JobEventListener {
 
 	@Override
 	@Async
-	public void processTerminate(List<@Valid FileterminateRequestInner> request) {
-		for (FileterminateRequestInner element: request) {
+	public void processTerminate(@Valid FileterminateRequest request) {
+		
+		for (String element: request.getTransferIds()) {
+		
 			try {
-				rService.deleteJob(element.getTransferId());
+				logger.debug("Cancelling transferId, " + element);
+				rService.deleteJob(element);
 			} catch (Exception e) {
-				logger.error("processTerminate: Unable to delete transferId, " + element.getTransferId() + ". Error: " + e.getMessage());
+				logger.error("Unable to cancel transferId, " + element + ". Error: " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
