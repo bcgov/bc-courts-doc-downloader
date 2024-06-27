@@ -2,11 +2,15 @@ package ca.bc.gov.ag.courts.service;
 
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -39,23 +43,34 @@ public class RedisCacheClientServiceImpl implements RedisCacheClientService {
 	
 	Logger logger = LoggerFactory.getLogger(RedisCacheClientServiceImpl.class);
 	
+	private final Environment environment;
 	private final RestTemplate restTemplate;
 	private final AppProperties props; 
 	private String redisUrl;
 	
-	public RedisCacheClientServiceImpl(RestTemplateBuilder restTemplateBuilder, AppProperties props) {
+	public RedisCacheClientServiceImpl(Environment environment, RestTemplateBuilder restTemplateBuilder, AppProperties props) {
+		this.environment = environment; 
 		this.restTemplate = restTemplateBuilder
 				.errorHandler(new GenericErrorHandler()) 
 				.build(); 
 		this.props = props; 
+		
 	}
 	
 	@PostConstruct
 	public void init() throws UnknownHostException {
-		redisUrl = "http://" + InetUtils.getIPForHostname(props.getRedisClientHost()) + ":" + props.getRedisClientPort() + "/";
-		logger.info("Resolved Redis Client started.");
+		
+		boolean unitTesting = Arrays.asList(this.environment.getActiveProfiles()).contains("test");
+		
+		if (!unitTesting) {
+			redisUrl = "http://" + InetUtils.getIPForHostname(props.getRedisClientHost()) + ":" + props.getRedisClientPort() + "/";
+			logger.info("Redis server DNS set for Redis Client.");
+		} else { 
+			// Set the redisUrl to a dummy host and port. unlike the above, in this case we don't want to resolve the IP for the host name as it will error. 
+			redisUrl = "http://localhost:6379/";
+			logger.info("Set Redis server to dummy value while profile is 'test'.");
+		}
 	}
-	
 	
 	@Override
 	@Retryable(retryFor = RestClientException.class, maxAttemptsExpression = "${application.net.max.retries}", backoff = @Backoff(delayExpression = "${application.net.delay}"))
