@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import ca.bc.gov.ag.courts.Utils.DownloaderConstants;
 import ca.bc.gov.ag.courts.Utils.InetUtils;
 import ca.bc.gov.ag.courts.api.DocumentApi;
 import ca.bc.gov.ag.courts.api.model.FileterminateRequest;
@@ -134,7 +135,7 @@ public class DocumentController implements DocumentApi {
 		jService.processTerminate(fileterminateRequest); 
 
 		FileterminateResponse resp = new FileterminateResponse();
-		resp.setResponse("success");
+		resp.setResponse(DownloaderConstants.SUCCESS);
 
 		return new ResponseEntity<FileterminateResponse>(resp, HttpStatus.ACCEPTED);
 

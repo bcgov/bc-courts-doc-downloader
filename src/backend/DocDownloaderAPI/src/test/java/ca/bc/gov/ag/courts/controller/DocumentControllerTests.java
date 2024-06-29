@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -33,6 +32,14 @@ import ca.bc.gov.ag.courts.service.RedisCacheClientServiceImpl;
 import ca.bc.gov.ag.courts.service.S3PollerService;
 import ca.bc.gov.ag.courts.service.S3ServiceImpl;
 
+/**
+ * 
+ * DocController Unit tests. 
+ * 
+ * 
+ * @author 176899
+ *
+ */
 @SpringBootTest
 @ActiveProfiles("test") // Sets active profile as 'test'. Note SecurityConfiguration class disabled for this profile. 
 public class DocumentControllerTests {
@@ -62,8 +69,11 @@ public class DocumentControllerTests {
 	@Mock
 	private MinioS3Utils mUtils;
 	
+	private final String transferIdFound = "12345";
+	private final String transferIdNotFound = "99999";
 	private final String DocUploadGoodRequestBody = "{\"objGuid\":\"d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyOHw+dXZOMENUYGxLSi54azB8P1JSRHFIY1t1aS4wODQyNDUwMDAuMzQyNjE2LjI0NjA0MTcuV1h7Xw==\",\"email\":\"someguy@bccourts.ca\",\"filePath\":\"/scvtest/case2/\"}";
 	private final String DocUploadPoorRequestBody = "{\"email\":\"someguy@bccourts.ca\",\"filePath\":\"/scvtest/case2/\"}";
+	private final String DocTerminateRequestBody = "{\"transferIds\":[\"501371fd568a4b608148435d0fb690ba\"]}";
 	
 	public DocumentControllerTests() throws Exception {
 		
@@ -72,9 +82,9 @@ public class DocumentControllerTests {
         
         when(appProps.getOrdsApplicationId()).thenReturn("1234");
         
-        // Set up job to return for JobService. 
+        // Set up job to return for the JobService. 
         Job job = new Job();
-		job.setId("1234");    
+		job.setId(transferIdFound);    
 		job.setGuid("guid"); 
 		job.setApplicationId(appProps.getOrdsApplicationId());
 		job.setGraphSessionUrl(null);
@@ -88,16 +98,18 @@ public class DocumentControllerTests {
 		job.setFileName("myfile.pdf"); 
 		job.setMimeType("application/pdf"); 
         
-        CompletableFuture<ResponseEntity<Job>> resp = CompletableFuture.completedFuture(new ResponseEntity<Job>(job, HttpStatus.OK)); 
-        when(rService.getJob("12345")).thenReturn(resp);
+		
+        CompletableFuture<ResponseEntity<Job>> found_resp = CompletableFuture.completedFuture(new ResponseEntity<Job>(job, HttpStatus.OK)); 
+        when(rService.getJob(transferIdFound)).thenReturn(found_resp);
+        
+        CompletableFuture<ResponseEntity<Job>> not_found_resp = CompletableFuture.completedFuture(new ResponseEntity<Job>(HttpStatus.NOT_FOUND)); 
+        when(rService.getJob(transferIdNotFound)).thenReturn(not_found_resp);
+               
         
 	}
 	
-	
     @BeforeEach
-    public void setup() {
-        //TODO - if required. 
-    }
+    public void setup() {}
 	
 	@Test
 	void contextLoads() {
@@ -143,7 +155,7 @@ public class DocumentControllerTests {
 		
 		// when
         MockHttpServletResponse response = mockMvc.perform(
-                get("/document/status/12345"))
+                get("/document/status/" + transferIdFound))
                 .andReturn().getResponse();
         
         // then
@@ -152,21 +164,28 @@ public class DocumentControllerTests {
 		
 	}
 	
-	@DisplayName("GET failure - DocumentController: : Doc Status test")
+	@DisplayName("GET failure - DocumentController: : Doc Status test when transferId not found.")
 	@Test
 	void documentStatusTransferIdGet_bad() throws Exception {
-	
-		//TODO - check this one. Need to validate 404 when transferId not found. 
 		
-        mockMvc.perform(
-                get("/document/status/"))
-                .andExpect(status().isNotFound());
+		MockHttpServletResponse response = mockMvc.perform(
+                get("/document/status/" + transferIdNotFound))
+                .andReturn().getResponse();
+		
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 	}
 	
 	@DisplayName("POST success - DocumentController: : Doc Terminate test")
 	@Test
-	void documentTerminatePost_ok() {
+	void documentTerminatePost_ok() throws Exception {
 		
+		MockHttpServletResponse response = mockMvc.perform(
+                post("/document/terminate")
+                		.content(DocTerminateRequestBody)
+                		.contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+		
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.ACCEPTED.value());
 	}
 
 }

@@ -7,5 +7,7 @@ public class DownloaderConstants {
 	// content types
 	public static final String JSON_CONTENT = "application/json";
 	public static final String TEXT_CONTENT = "text/html";
+	
+	public static final String SUCCESS = "success";
 
 }
