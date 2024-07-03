@@ -67,7 +67,7 @@ public class DocumentController implements DocumentApi {
 		job.setEndDeliveryDtm(null);
 		job.setPercentageComplete(0); 
 		job.setFilePath(filetransferRequest.getFilePath());
-		job.setFileName(null); 
+		job.setFileName(filetransferRequest.getFileName()); 
 		job.setMimeType(null); 
 		
 		jService.processDocRequest(job); // trip of the processing in this async thread. 
