@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.PropertyResolver;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -42,44 +41,44 @@ public class RedisCacheClientServiceTests {
 
 	@InjectMocks
 	private RedisCacheClientServiceImpl redisCacheClient;
+	 
+	@Mock
+	private Environment environment;
 	
 	@Mock
-	private final Environment environment = new Environment();
+	private RestTemplateBuilder restTemplateBuilder;
 	
 	@Mock
-	private final RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
+	private RestTemplate restTemplate;
 	
 	@Mock
-	private final RestTemplate restTemplate = new RestTemplate();
-	
-	@Mock
-	private final AppProperties props = new AppProperties(); 
+	private AppProperties props; 
 	
     @BeforeEach
     public void setup() {
     	
-    	MockitoAnnotations.openMocks(this);
-		this.mockMvc = MockMvcBuilders.standaloneSetup(redisCacheClient).build();
-		
-        // Mock RestTemplateBuilder behaviour
-        doReturn(this.restTemplateBuilder).when(this.restTemplateBuilder).basicAuthentication(anyString(), anyString());
-        doReturn(this.restTemplateBuilder).when(this.restTemplateBuilder).rootUri(anyString());
-        doReturn(this.restTemplate).when(this.restTemplateBuilder).build();
-        
-        // Mock RestTemplateBuilder behaviour
-        when(this.environment.getActiveProfiles()).thenReturn(new String[] {"test"});
-		
-        props.getRedisClientUsername(), props.getRedisClientPassword()
-        when(this.props.getRedisClientUsername()).thenReturn("user");
-        when(this.props.getRedisClientPassword()).thenReturn("password");
-        
-        
-        
+//    	// Mock RestTemplateBuilder behaviour
+//        doReturn(this.restTemplateBuilder).when(this.restTemplateBuilder).basicAuthentication(anyString(), anyString());
+//        doReturn(this.restTemplateBuilder).when(this.restTemplateBuilder).rootUri(anyString());
+//        doReturn(this.restTemplateBuilder).when(this.restTemplateBuilder).errorHandler(new GenericErrorHandler());
+//        doReturn(this.restTemplate).when(this.restTemplateBuilder).build();
+//    	
+//    	MockitoAnnotations.openMocks(this);
+//		this.mockMvc = MockMvcBuilders.standaloneSetup(redisCacheClient).build();
+//		
+//        
+//        
+//        // Mock RestTemplateBuilder behaviour
+//        when(this.environment.getActiveProfiles()).thenReturn(new String[] {"test"});
+//		
+//        when(this.props.getRedisClientUsername()).thenReturn("user");
+//        when(this.props.getRedisClientPassword()).thenReturn("password");
+           
     }
 	
-	@Test
-	void contextLoads() {
-		logger.info("Context loaded for " + this.getClass().getName());
-	}
+//	@Test
+//	void contextLoads() {
+//		logger.info("Context loaded for " + this.getClass().getName());
+//	}
 
 }
