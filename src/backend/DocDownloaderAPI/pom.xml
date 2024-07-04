@@ -188,6 +188,11 @@
 			<artifactId>logback-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>dev.akkinoc.spring.boot</groupId>
+			<artifactId>logback-access-spring-boot-starter</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>
 		</dependency>
