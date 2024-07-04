@@ -96,6 +96,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //			logger.debug("Filename received from ORDS: " + resp.getBody().getFilename());
 //			
 //			job.setPercentageComplete(10); 
+//	        job.setOrdsFileName(resp.getBody().getFilename());
 //			job.setMimeType(resp.getBody().getMimetype());
 //			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
 //			
@@ -159,7 +160,10 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			CompletableFuture<ResponseEntity<OrdsPushResponse>> _resp = oService.pushFile(job); 
 			ResponseEntity<OrdsPushResponse> resp =  _resp.get();
 			
-			job.setPercentageComplete(10);  
+			logger.debug("Filename received from ORDS: " + resp.getBody().getFilename());
+			
+			job.setPercentageComplete(10); 
+			job.setOrdsFileName(resp.getBody().getFilename());
 			job.setMimeType(resp.getBody().getMimetype());
 			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
 			
