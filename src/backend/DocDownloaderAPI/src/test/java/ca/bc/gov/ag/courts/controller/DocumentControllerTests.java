@@ -71,7 +71,7 @@ public class DocumentControllerTests {
 	
 	private final String transferIdFound = "12345";
 	private final String transferIdNotFound = "99999";
-	private final String DocUploadGoodRequestBody = "{\"objGuid\":\"d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyOHw+dXZOMENUYGxLSi54azB8P1JSRHFIY1t1aS4wODQyNDUwMDAuMzQyNjE2LjI0NjA0MTcuV1h7Xw==\",\"email\":\"someguy@bccourts.ca\",\"filePath\":\"/scvtest/case2/\"}";
+	private final String DocUploadGoodRequestBody = "{\"objGuid\":\"d2x3dGJpZ3RYUWA7bSo0NExpRlVBYk5nNTRyPEpfdV55U2dHbWpVQysyOHw+dXZOMENUYGxLSi54azB8P1JSRHFIY1t1aS4wODQyNDUwMDAuMzQyNjE2LjI0NjA0MTcuV1h7Xw==\",\"email\":\"someguy@bccourts.ca\",\"filePath\":\"/scvtest/case2/\",\"fileName\":\"test.pdf\"}";
 	private final String DocUploadPoorRequestBody = "{\"email\":\"someguy@bccourts.ca\",\"filePath\":\"/scvtest/case2/\"}";
 	private final String DocTerminateRequestBody = "{\"transferIds\":[\"501371fd568a4b608148435d0fb690ba\"]}";
 	
