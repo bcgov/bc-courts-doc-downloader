@@ -90,6 +90,7 @@ components:
           - objGuid
           - email
           - filePath
+          - fileName
       properties:
         objGuid: 
            type: string
@@ -101,7 +102,10 @@ components:
            description: 'The recipients email address' 
         filePath:
            type: string
-           description: 'The path to write the file to. Leave as null for writing to root.'
+           description: 'The path to write the Object Store document to. Leave as null for writing to root.'
+        fileName:
+           type: string
+           description: 'The file name given to the Object Store document identified by the ObjGuid.'   
     filetransfer_response:
       type: object
       properties:
