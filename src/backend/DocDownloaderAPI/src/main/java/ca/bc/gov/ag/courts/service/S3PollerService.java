@@ -13,8 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import ca.bc.gov.ag.courts.Utils.InetUtils;
 import ca.bc.gov.ag.courts.config.AppProperties;
+import ca.bc.gov.ag.courts.model.Job;
 import jakarta.annotation.PostConstruct;
 
 @Service
@@ -27,6 +27,7 @@ public class S3PollerService {
 	
 	public S3PollerService(AppProperties props, S3Service sService) {
 		this.sService = sService; 
+		this.props = props; 
 	}
 	
 	@PostConstruct
@@ -45,19 +46,23 @@ public class S3PollerService {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	public void PollS3ForFile(String fileName, JobService service) throws InterruptedException, ExecutionException {
+	public void PollS3ForFile(String fileName, JobService service, Job job) throws InterruptedException, ExecutionException {
 		
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		Future<String> future = executor.submit(new Poll(fileName));
 		
 		try {
+			
             logger.debug("Polling started for fileName: " + fileName);
-            future.get(10, TimeUnit.MINUTES); //TODO - externalize. 
-            service.onS3DocumentArrival("Document found");
+            
+            future.get(10, TimeUnit.MINUTES);  
+            
+            
+            service.onS3DocumentArrival("Document found", job);
             
         } catch (TimeoutException e) {
             future.cancel(true);
-            service.onS3DocumentTimeout("Timeout reached");
+            service.onS3DocumentTimeout("Timeout reached", job);
         }
 
         executor.shutdownNow();
@@ -104,6 +109,7 @@ public class S3PollerService {
 		logger.debug("S3 Query for fileName " + fileName);
 		
 		try {
+			Thread.sleep(4000);
 			return sService.objectExists(props.getS3AccessBucket(), fileName);
 		} catch (Exception e) {
 			logger.error("S3PollerService: Error while querying S3 object store: " + e.getMessage());
