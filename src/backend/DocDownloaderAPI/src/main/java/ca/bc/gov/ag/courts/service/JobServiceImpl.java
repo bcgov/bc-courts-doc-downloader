@@ -1,14 +1,13 @@
 package ca.bc.gov.ag.courts.service;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.Valid;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -188,7 +187,6 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //        }
 //    }
 
-// TODO - Restore this code to revert to MS Graph usage	
 // Original version - Replace this method once the connection to MS Graph has been restored. 	
 	/**
 	 * 
@@ -196,19 +194,18 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * 
 	 * Note: This method must live outside of the MSGraphService class as it calls 'mService.uploadChunk'. If this method lives
 	 * within the MSGraphService, the 'Retryable' uploadChunk fails to remain 'Retryable'.  
-	 * @param job 
 	 * 
-	 * @param content
-	 * @param uploadUrl
-	 * @param fileSize
-	 * @return
-	 * @throws Exception
-	 */
-	private CompletableFuture<JSONObject> uploadFileInChunks(Job job, byte[] content, String uploadUrl) throws Exception {
+ 	 * 
+ 	 * @param job
+ 	 * @param fileStream
+ 	 * @param uploadUrl
+ 	 * @return
+ 	 * @throws Exception
+ 	 */
+	private CompletableFuture<JSONObject> uploadFileInChunks(Job job, InputStream fileStream, String uploadUrl) throws Exception {
 
 		int fragSize = 320 * 1024;
 		long fileSize = job.getFileSize();
-		//long fileSize = content.length;
 		int numFragments = (int) ((fileSize / fragSize) + 1);
 		byte[] buffer = new byte[fragSize];
 		
@@ -219,28 +216,37 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		logger.debug("Number of fragments: " + numFragments);
 		logger.debug("Upload chunk percentage increase: " + uploadTick);
 
-		int bytesRead;
+		int bytesRead = 0;
 
 		JSONObject lastResponseObject = null;
 
-		//TODO - remove me when inputstream working instead of content. 
-		InputStream fileStream = new ByteArrayInputStream(content);
-
-		try (BufferedInputStream bis = new BufferedInputStream(fileStream)) {
+		// DataInputstream is used below as it provides the ability to completely 
+		// load the buffer with data each time it reads from the incoming stream. If the 
+		// conventional InputStream was used, the buffer is not guaranteed to be filled on 
+		// each Read() resulting in many more chunks being uploaded. 
+		try (DataInputStream dis = new DataInputStream(fileStream)) {
 
 			long bytesRemaining = fileSize;
 			int count = 0;
 
-			while ((bytesRead = bis.read(buffer)) != -1) {
+			while (bytesRemaining > 0) {
 
 				int chunkSize = fragSize;
 
+				// Accounts for possible remainder of dividing 
+				// the file size by the fragsize. 
 				if (bytesRemaining < chunkSize) {
 					chunkSize = (int) bytesRemaining;
 				}
+				
+				try {
+					dis.readFully(buffer, 0, chunkSize); // See description of this line above. 
+				} catch (EOFException eof) {
+					 System.out.println("End of file reached");
+				}
 
-				byte[] chunk = new byte[bytesRead];
-				System.arraycopy(buffer, 0, chunk, 0, bytesRead);
+				byte[] chunk = new byte[chunkSize];
+				System.arraycopy(buffer, 0, chunk, 0, chunkSize);
 
 				CompletableFuture<JSONObject> chunkResponse = mService.uploadChunk(uploadUrl, count, fileSize, chunk,
 						fragSize, chunkSize);
@@ -279,6 +285,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		return CompletableFuture.completedFuture(lastResponseObject);
 
 	}
+	
 	
 	/**
 	 * 
@@ -403,10 +410,8 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			// Fetch the file from the S3 store. 
 			InputStream fileStream = sService.downloadObject(props.getS3AccessBucket(), job.getOrdsFileName());
 			
-			// TODO - Here: need fileStream to byte conversion temporally here. 
-			byte[] content = IOUtils.toByteArray(fileStream);
-			
-			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, content, sessionUrl);
+			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, fileStream, sessionUrl);
+			//CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, fileStream, sessionUrl);
 			JSONObject mResp = uploadResponse.get();
 			logger.debug(mResp.toString());
 			
