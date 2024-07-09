@@ -91,6 +91,9 @@ public class AppProperties {
 	
 	@Value("${s3.access.secretkey}")
 	private String s3AccessSecretkey;
+	
+	@Value("${s3.poller.timeout.minutes}")
+	private int s3PollerTimeoutMinutes;
 
 	public String getApplicationName() {
 		return applicationName;
@@ -314,6 +317,14 @@ public class AppProperties {
 
 	public void setS3AccessSecretkey(String s3AccessSecretkey) {
 		this.s3AccessSecretkey = s3AccessSecretkey;
+	}
+
+	public int getS3PollerTimeoutMinutes() {
+		return s3PollerTimeoutMinutes;
+	}
+
+	public void setS3PollerTimeoutMinutes(int s3PollerTimeoutMinutes) {
+		this.s3PollerTimeoutMinutes = s3PollerTimeoutMinutes;
 	}
 
 }

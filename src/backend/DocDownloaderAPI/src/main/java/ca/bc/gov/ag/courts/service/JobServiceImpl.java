@@ -18,6 +18,7 @@ import ca.bc.gov.ag.courts.Utils.AuthHelper;
 import ca.bc.gov.ag.courts.Utils.TimeHelper;
 import ca.bc.gov.ag.courts.api.model.FileterminateRequest;
 import ca.bc.gov.ag.courts.api.model.OrdsPushResponse;
+import ca.bc.gov.ag.courts.config.AppProperties;
 import ca.bc.gov.ag.courts.listener.JobEventListener;
 import ca.bc.gov.ag.courts.model.Job;
 import jakarta.annotation.PostConstruct; 
@@ -26,15 +27,18 @@ import jakarta.annotation.PostConstruct;
  * 
  * Main Job Processing service. 
  * 
- * This service provides generates an Async process to completely service 1 document push request to OneDrive.
+ * This service provides generates an Async process to service 1 document push request to OneDrive.
  * 
  * Steps: 
  * 
- * 	1.) ORDS call is made for document which returns synchronously. 
- *  2.) Validate the file has arrived on the intermediate S3 drive location. 
+ * 	1.) ORDS call is made for document to be placed on NFS.
+ *  2.) (ISB) 'Bucket Pumper' pushed file to the S3 storage bucket.  
+ *  2.) Use the S3PollerService to watch for the file to appear on the intermediate S3 storage. 
  *  3.) Request a file upload session URL from MS Graph.
- *  4.) Sequentially upload the file in chunks until complete. 
- * 
+ *  4.) Sequentially pull from the S3 input stream and push to the MS Graph OneDrive location until the stream is empty.  
+ *  
+ * During the above, percentage complete, and or errors, are written to Redis by way of the Redis Client.  
+ *  
  * As single access token is required to initiate the MS Graph Upload session only.  
  * 
  * @author 176899
@@ -50,15 +54,24 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	private final OrdsDocumentService oService;
 	private final AuthHelper aService; 
 	private final MSGraphService mService; 
+	private final S3PollerService pService; 
+	private final S3Service sService;
+	private final AppProperties props; 
 	
 	public JobServiceImpl(RedisCacheClientService rService, 
 			OrdsDocumentService oService, 
 			AuthHelper aService, 
-			MSGraphService mService) {
+			MSGraphService mService,
+			S3PollerService pService,
+			S3Service sService,
+			AppProperties props) {
 		this.rService = rService; 
 		this.oService = oService;
 		this.aService = aService; 
 		this.mService = mService;
+		this.pService = pService;
+		this.sService = sService; 
+		this.props = props;
 	}
 	
 	@PostConstruct
@@ -96,33 +109,20 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //			logger.debug("Filename received from ORDS: " + resp.getBody().getFilename());
 //			
 //			job.setPercentageComplete(10); 
+//			
+//			// TODO - Uncomment this when bucket pumper working. Remove next line. 
+//	        //job.setOrdsFileName(resp.getBody().getFilename());
+//			job.setOrdsFileName("pZuu5fgHrtr98jekhew.pdf");
+//			
 //			job.setMimeType(resp.getBody().getMimetype());
 //			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
 //			
 //			// Update Redis after sync ORDS push to intermediate NFS storage. 
 //			rService.updateJob(job);
 //			
-//			// TODO - Check for the presence of the file on the NFS. (requires connectivity - See SCV-456)  
+//			// Once the file has been found on the S3 storage, the onS3DocumentArrival method is called to initiate the MS Graph push. 
+//			pService.PollS3ForFile(job.getOrdsFileName(), this, job);
 //			
-//			// Initiate MS Graph upload process by acquiring the session URL. (requires connectivity for O/S - See SCV-457). 
-//			String token = aService.GetAccessToken();
-//			
-//			String sessionUrl = mService.createUploadSessionFromUserId(
-//					token, mService.GetUserId(token, job.getEmail()), job.getFilePath(), job.getFileName()
-//			);
-//			
-//			//TODO - Remove me for prod - Loads a dummy file instead of the one pulled from the object store.  
-//			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("test.pdf");
-//			byte[] bytes = TestHelper.fetchFileResourceAsBytes("15394_3M.pdf");
-//			
-//			//TODO - Remove this next line once the NFS solution has been implemented 
-//			job.setFileSize(bytes.length);
-//			
-//			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, bytes, sessionUrl);
-//			JSONObject mResp = uploadResponse.get();
-//			logger.debug(mResp.toString());
-//			
-//            this.onCompletion(job); // success callback
 //            
 //        } catch (Exception e) {
 //        	
@@ -141,6 +141,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * 
 	 * @param job
 	 */
+// Stuart version. 	
 	@Async
     public void processDocRequest(Job job) {
 		
@@ -159,7 +160,10 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			CompletableFuture<ResponseEntity<OrdsPushResponse>> _resp = oService.pushFile(job); 
 			ResponseEntity<OrdsPushResponse> resp =  _resp.get();
 			
-			job.setPercentageComplete(10);  
+			logger.debug("Filename received from ORDS: " + resp.getBody().getFilename());
+			
+			job.setPercentageComplete(10); 
+			job.setOrdsFileName(resp.getBody().getFilename());
 			job.setMimeType(resp.getBody().getMimetype());
 			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
 			
@@ -181,26 +185,25 @@ public class JobServiceImpl implements JobService, JobEventListener {
         }
     }
 
-// TODO - Restore this code to revert to MS Graph usage	
-// Original - Replace this method once the connection to MS Graph has been restored. 	
+// Original version - Replace this method once the connection to MS Graph has been restored. 	
 //	/**
 //	 * 
 //	 * Upload file content in chunks
 //	 * 
 //	 * Note: This method must live outside of the MSGraphService class as it calls 'mService.uploadChunk'. If this method lives
 //	 * within the MSGraphService, the 'Retryable' uploadChunk fails to remain 'Retryable'.  
-//	 * @param job 
 //	 * 
-//	 * @param content
-//	 * @param uploadUrl
-//	 * @param fileSize
-//	 * @return
-//	 * @throws Exception
-//	 */
-//	private CompletableFuture<JSONObject> uploadFileInChunks(Job job, byte[] content, String uploadUrl) throws Exception {
+// 	 * 
+// 	 * @param job
+// 	 * @param fileStream
+// 	 * @param uploadUrl
+// 	 * @return
+// 	 * @throws Exception
+// 	 */
+//	private CompletableFuture<JSONObject> uploadFileInChunks(Job job, InputStream fileStream, String uploadUrl) throws Exception {
 //
 //		int fragSize = 320 * 1024;
-//		long fileSize = content.length;
+//		long fileSize = job.getFileSize();
 //		int numFragments = (int) ((fileSize / fragSize) + 1);
 //		byte[] buffer = new byte[fragSize];
 //		
@@ -211,27 +214,35 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //		logger.debug("Number of fragments: " + numFragments);
 //		logger.debug("Upload chunk percentage increase: " + uploadTick);
 //
-//		int bytesRead;
-//
 //		JSONObject lastResponseObject = null;
 //
-//		InputStream fileStream = new ByteArrayInputStream(content);
-//
-//		try (BufferedInputStream bis = new BufferedInputStream(fileStream)) {
+//		// DataInputstream is used below as it provides the ability to completely 
+//		// load the buffer with data each time it reads from the incoming stream. If a 
+//		// conventional InputStream was used, the buffer is not guaranteed to be filled on 
+//		// each Read() resulting in many more chunks being uploaded. 
+//		try (DataInputStream dis = new DataInputStream(fileStream)) {
 //
 //			long bytesRemaining = fileSize;
 //			int count = 0;
 //
-//			while ((bytesRead = bis.read(buffer)) != -1) {
+//			while (bytesRemaining > 0) {
 //
 //				int chunkSize = fragSize;
 //
+//				// Accounts for possible remainder of dividing 
+//				// the file size by the fragsize. 
 //				if (bytesRemaining < chunkSize) {
 //					chunkSize = (int) bytesRemaining;
 //				}
+//				
+//				try {
+//					dis.readFully(buffer, 0, chunkSize); // See description of this line above. 
+//				} catch (EOFException eof) {
+//					 System.out.println("End of file reached");
+//				}
 //
-//				byte[] chunk = new byte[bytesRead];
-//				System.arraycopy(buffer, 0, chunk, 0, bytesRead);
+//				byte[] chunk = new byte[chunkSize];
+//				System.arraycopy(buffer, 0, chunk, 0, chunkSize);
 //
 //				CompletableFuture<JSONObject> chunkResponse = mService.uploadChunk(uploadUrl, count, fileSize, chunk,
 //						fragSize, chunkSize);
@@ -271,6 +282,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //
 //	}
 	
+	
 	/**
 	 * 
 	 * Upload file content in chunks
@@ -285,6 +297,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * @return
 	 * @throws Exception
 	 */
+// Stuart version	
 	private void uploadFileInChunks(Job job) throws Exception {
 
 		int fragSize = 320 * 1024;
@@ -368,13 +381,47 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	
 	/**
 	 * 
-	 * S3 delivery callback 
+	 * S3 delivery callback - Initiates the MS Graph upload. 
 	 * 
 	 * @param msg
 	 */
-	public void onS3DocumentArrival(String msg) {
+	public void onS3DocumentArrival(String msg, Job job) {
+		
 		logger.debug("Received a message on S3DocumentArrival: " + msg);
 		logger.debug("Initiating MS Graph push");
+		
+		try {
+			
+			// Initiate MS Graph upload process by acquiring the session URL. (requires connectivity for O/S - See SCV-457). 
+			String token = aService.GetAccessToken();
+			
+			String sessionUrl = mService.createUploadSessionFromUserId(
+					token, mService.GetUserId(token, job.getEmail()), job.getFilePath(), job.getFileName()
+			);
+			
+			//TODO - Remove me for prod - Loads a dummy file instead of the one pulled from the object store.  
+			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("test.pdf");
+			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("15394_3M.pdf");
+			
+			// Fetch the file from the S3 store. 
+			//InputStream fileStream = sService.downloadObject(props.getS3AccessBucket(), job.getOrdsFileName());
+			
+			//CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job);
+			//JSONObject mResp = uploadResponse.get();
+			//logger.debug(mResp.toString());
+			
+			uploadFileInChunks(job);
+			
+	        this.onCompletion(job); // success callback
+        
+        
+		} catch (Exception ex) {
+			this.onError(job, ex);
+            Thread.currentThread().interrupt();
+		}  finally {
+			MDC.remove(job.getId());
+		}
+		
 	}
 	
 	/**
@@ -382,11 +429,31 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * S3 timeout callback
 	 * 
 	 * @param msg
+	 * @throws Exception 
 	 */
-	public void onS3DocumentTimeout(String msg) {
-		logger.debug("Received a timeout message on S3DocumentTimeout: " + msg);
+	public void onS3DocumentTimeout(String msg, Job job) {
+		
+		logger.error("Received a timeout message on S3DocumentTimeout: " + msg);
+		
+		// Report timeout error to Redis. 
+		job.setError(true);
+		job.setLastErrorMessage("File transfer failure. S3 Document Storage time out error.");
+		try {
+			this.rService.updateJob(job);
+			MDC.remove(job.getId());
+			Thread.currentThread().interrupt();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
+	/**
+	 * 
+	 * processTerminate
+	 * 
+	 * @param request
+	 */
 	@Override
 	@Async
 	public void processTerminate(@Valid FileterminateRequest request) {
@@ -406,7 +473,9 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	/**
 	 * 
 	 * Test to determine if jobId already exists
-	 *  
+	 * 
+	 * @param jobId
+	 * @return
 	 */
 	private boolean jobExists(String jobId) {
 		
