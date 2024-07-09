@@ -1,14 +1,10 @@
 package ca.bc.gov.ag.courts.service;
 
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.InputStream;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.Valid;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -408,11 +404,13 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("15394_3M.pdf");
 			
 			// Fetch the file from the S3 store. 
-			InputStream fileStream = sService.downloadObject(props.getS3AccessBucket(), job.getOrdsFileName());
+			//InputStream fileStream = sService.downloadObject(props.getS3AccessBucket(), job.getOrdsFileName());
 			
-			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, fileStream, sessionUrl);
-			JSONObject mResp = uploadResponse.get();
-			logger.debug(mResp.toString());
+			//CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job);
+			//JSONObject mResp = uploadResponse.get();
+			//logger.debug(mResp.toString());
+			
+			uploadFileInChunks(job);
 			
 	        this.onCompletion(job); // success callback
         
