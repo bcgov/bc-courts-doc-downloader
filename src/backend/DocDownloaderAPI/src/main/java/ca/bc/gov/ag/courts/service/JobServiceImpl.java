@@ -86,66 +86,12 @@ public class JobServiceImpl implements JobService, JobEventListener {
 
 // TODO - Restore this code to revert to MS Graph usage	
 // Original - Replace this method once the connection to MS Graph has been restored. 		
-	/**
-	 * 
-	 * Main processor  
-	 * 
-	 * @param job
-	 */
-	@Async
-    public void processDocRequest(Job job) {
-		
-		MDC.put("transferid", job.getId());
-        
-		logger.info("Heard a call to processDocRequest.");
-		
-		try {
-		
-			// set time of job creation
-			job.setStartDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
-			
-			// create the initial entry in Redis.
-			rService.createJob(job); 
-			
-			CompletableFuture<ResponseEntity<OrdsPushResponse>> _resp = oService.pushFile(job); 
-			ResponseEntity<OrdsPushResponse> resp =  _resp.get();
-			
-			logger.debug("Filename received from ORDS: " + resp.getBody().getFilename());
-			
-			job.setPercentageComplete(10); 
-			
-			// TODO - Uncomment this when bucket pumper working. Remove next line. 
-	        //job.setOrdsFileName(resp.getBody().getFilename());
-			job.setOrdsFileName("pZuu5fgHrtr98jekhew.pdf");
-			
-			job.setMimeType(resp.getBody().getMimetype());
-			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
-			
-			// Update Redis after sync ORDS push to intermediate NFS storage. 
-			rService.updateJob(job);
-			
-			// Once the file has been found on the S3 storage, the onS3DocumentArrival method is called to initiate the MS Graph push. 
-			pService.PollS3ForFile(job.getOrdsFileName(), this, job);
-			
-            
-        } catch (Exception e) {
-        	
-        	this.onError(job, e);  // error callback
-            Thread.currentThread().interrupt();
-            
-        } finally {
-        	MDC.remove("transferid");
-        }
-    }
-	
-	
-	/**
-	 * 
-	 * Main processor  
-	 * 
-	 * @param job
-	 */
-// Stuart version. 	
+//	/**
+//	 * 
+//	 * Main processor  
+//	 * 
+//	 * @param job
+//	 */
 //	@Async
 //    public void processDocRequest(Job job) {
 //		
@@ -167,17 +113,20 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //			logger.debug("Filename received from ORDS: " + resp.getBody().getFilename());
 //			
 //			job.setPercentageComplete(10); 
-//			job.setOrdsFileName(resp.getBody().getFilename());
+//			
+//			// TODO - Uncomment this when bucket pumper working. Remove next line. 
+//	        //job.setOrdsFileName(resp.getBody().getFilename());
+//			job.setOrdsFileName("pZuu5fgHrtr98jekhew.pdf");
+//			
 //			job.setMimeType(resp.getBody().getMimetype());
 //			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
 //			
 //			// Update Redis after sync ORDS push to intermediate NFS storage. 
-//			rService.updateJob(job); 
-//		   
-//			//Fake out the MS Graph portion of this job.
-//			uploadFileInChunks(job); 
-//
-//            this.onCompletion(job); // success callback
+//			rService.updateJob(job);
+//			
+//			// Once the file has been found on the S3 storage, the onS3DocumentArrival method is called to initiate the MS Graph push. 
+//			pService.PollS3ForFile(job.getOrdsFileName(), this, job);
+//			
 //            
 //        } catch (Exception e) {
 //        	
@@ -188,103 +137,154 @@ public class JobServiceImpl implements JobService, JobEventListener {
 //        	MDC.remove("transferid");
 //        }
 //    }
-
-// Original version - Replace this method once the connection to MS Graph has been restored. 	
+	
+	
 	/**
 	 * 
-	 * Upload file content in chunks
+	 * Main processor  
 	 * 
-	 * Note: This method must live outside of the MSGraphService class as it calls 'mService.uploadChunk'. If this method lives
-	 * within the MSGraphService, the 'Retryable' uploadChunk fails to remain 'Retryable'.  
-	 * 
- 	 * 
- 	 * @param job
- 	 * @param fileStream
- 	 * @param uploadUrl
- 	 * @return
- 	 * @throws Exception
- 	 */
-	private CompletableFuture<JSONObject> uploadFileInChunks(Job job, InputStream fileStream, String uploadUrl) throws Exception {
-
-		int fragSize = 320 * 1024;
-		long fileSize = job.getFileSize();
-		int numFragments = (int) ((fileSize / fragSize) + 1);
-		byte[] buffer = new byte[fragSize];
+	 * @param job
+	 */
+// Stuart version. 	
+	@Async
+    public void processDocRequest(Job job) {
 		
-		// Percentage complete increment for each chunk.
-		int uploadTick = 90 / numFragments;  
+		MDC.put("transferid", job.getId());
+        
+		logger.info("Heard a call to processDocRequest.");
+		
+		try {
+		
+			// set time of job creation
+			job.setStartDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
+			
+			// create the initial entry in Redis.
+			rService.createJob(job); 
+			
+			CompletableFuture<ResponseEntity<OrdsPushResponse>> _resp = oService.pushFile(job); 
+			ResponseEntity<OrdsPushResponse> resp =  _resp.get();
+			
+			logger.debug("Filename received from ORDS: " + resp.getBody().getFilename());
+			
+			job.setPercentageComplete(10); 
+			job.setOrdsFileName(resp.getBody().getFilename());
+			job.setMimeType(resp.getBody().getMimetype());
+			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
+			
+			// Update Redis after sync ORDS push to intermediate NFS storage. 
+			rService.updateJob(job); 
+		   
+			//Fake out the MS Graph portion of this job.
+			uploadFileInChunks(job); 
 
-		logger.debug("FileSize being uploaded: " + fileSize);
-		logger.debug("Number of fragments: " + numFragments);
-		logger.debug("Upload chunk percentage increase: " + uploadTick);
+            this.onCompletion(job); // success callback
+            
+        } catch (Exception e) {
+        	
+        	this.onError(job, e);  // error callback
+            Thread.currentThread().interrupt();
+            
+        } finally {
+        	MDC.remove("transferid");
+        }
+    }
 
-		JSONObject lastResponseObject = null;
-
-		// DataInputstream is used below as it provides the ability to completely 
-		// load the buffer with data each time it reads from the incoming stream. If a 
-		// conventional InputStream was used, the buffer is not guaranteed to be filled on 
-		// each Read() resulting in many more chunks being uploaded. 
-		try (DataInputStream dis = new DataInputStream(fileStream)) {
-
-			long bytesRemaining = fileSize;
-			int count = 0;
-
-			while (bytesRemaining > 0) {
-
-				int chunkSize = fragSize;
-
-				// Accounts for possible remainder of dividing 
-				// the file size by the fragsize. 
-				if (bytesRemaining < chunkSize) {
-					chunkSize = (int) bytesRemaining;
-				}
-				
-				try {
-					dis.readFully(buffer, 0, chunkSize); // See description of this line above. 
-				} catch (EOFException eof) {
-					 System.out.println("End of file reached");
-				}
-
-				byte[] chunk = new byte[chunkSize];
-				System.arraycopy(buffer, 0, chunk, 0, chunkSize);
-
-				CompletableFuture<JSONObject> chunkResponse = mService.uploadChunk(uploadUrl, count, fileSize, chunk,
-						fragSize, chunkSize);
-				lastResponseObject = chunkResponse.get();
-				
-				bytesRemaining = bytesRemaining - chunkSize;
-				
-				// If transferId still exists (and hasn't been cancelled by the user), continue processing, otherwise
-				// cancel upload session and break while loop. 
-				if (jobExists(job.getId())) {
-				
-					// Report latest upload to Redis. 
-					job.setPercentageComplete( job.getPercentageComplete() + uploadTick );
-					if (job.getPercentageComplete() == 100) {
-						job.setEndDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
-						job.setBytesDelivered(fileSize - bytesRemaining);
-					}
-					this.rService.updateJob(job);
-	
-					logger.debug("Chunk " + count + " uploaded.");
-					logger.debug("Bytes remaining to be delivered = " + bytesRemaining);
-					
-					count++;
-					
-				} else {
-					
-					logger.warn("Cancelling MS Graph upload session for transferId, " + job.getId());
-					
-					mService.deleteUploadSession(uploadUrl, job.getId());
-					break;
-					
-				}
-			}
-		}
-
-		return CompletableFuture.completedFuture(lastResponseObject);
-
-	}
+// Original version - Replace this method once the connection to MS Graph has been restored. 	
+//	/**
+//	 * 
+//	 * Upload file content in chunks
+//	 * 
+//	 * Note: This method must live outside of the MSGraphService class as it calls 'mService.uploadChunk'. If this method lives
+//	 * within the MSGraphService, the 'Retryable' uploadChunk fails to remain 'Retryable'.  
+//	 * 
+// 	 * 
+// 	 * @param job
+// 	 * @param fileStream
+// 	 * @param uploadUrl
+// 	 * @return
+// 	 * @throws Exception
+// 	 */
+//	private CompletableFuture<JSONObject> uploadFileInChunks(Job job, InputStream fileStream, String uploadUrl) throws Exception {
+//
+//		int fragSize = 320 * 1024;
+//		long fileSize = job.getFileSize();
+//		int numFragments = (int) ((fileSize / fragSize) + 1);
+//		byte[] buffer = new byte[fragSize];
+//		
+//		// Percentage complete increment for each chunk.
+//		int uploadTick = 90 / numFragments;  
+//
+//		logger.debug("FileSize being uploaded: " + fileSize);
+//		logger.debug("Number of fragments: " + numFragments);
+//		logger.debug("Upload chunk percentage increase: " + uploadTick);
+//
+//		JSONObject lastResponseObject = null;
+//
+//		// DataInputstream is used below as it provides the ability to completely 
+//		// load the buffer with data each time it reads from the incoming stream. If a 
+//		// conventional InputStream was used, the buffer is not guaranteed to be filled on 
+//		// each Read() resulting in many more chunks being uploaded. 
+//		try (DataInputStream dis = new DataInputStream(fileStream)) {
+//
+//			long bytesRemaining = fileSize;
+//			int count = 0;
+//
+//			while (bytesRemaining > 0) {
+//
+//				int chunkSize = fragSize;
+//
+//				// Accounts for possible remainder of dividing 
+//				// the file size by the fragsize. 
+//				if (bytesRemaining < chunkSize) {
+//					chunkSize = (int) bytesRemaining;
+//				}
+//				
+//				try {
+//					dis.readFully(buffer, 0, chunkSize); // See description of this line above. 
+//				} catch (EOFException eof) {
+//					 System.out.println("End of file reached");
+//				}
+//
+//				byte[] chunk = new byte[chunkSize];
+//				System.arraycopy(buffer, 0, chunk, 0, chunkSize);
+//
+//				CompletableFuture<JSONObject> chunkResponse = mService.uploadChunk(uploadUrl, count, fileSize, chunk,
+//						fragSize, chunkSize);
+//				lastResponseObject = chunkResponse.get();
+//				
+//				bytesRemaining = bytesRemaining - chunkSize;
+//				
+//				// If transferId still exists (and hasn't been cancelled by the user), continue processing, otherwise
+//				// cancel upload session and break while loop. 
+//				if (jobExists(job.getId())) {
+//				
+//					// Report latest upload to Redis. 
+//					job.setPercentageComplete( job.getPercentageComplete() + uploadTick );
+//					if (job.getPercentageComplete() == 100) {
+//						job.setEndDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
+//						job.setBytesDelivered(fileSize - bytesRemaining);
+//					}
+//					this.rService.updateJob(job);
+//	
+//					logger.debug("Chunk " + count + " uploaded.");
+//					logger.debug("Bytes remaining to be delivered = " + bytesRemaining);
+//					
+//					count++;
+//					
+//				} else {
+//					
+//					logger.warn("Cancelling MS Graph upload session for transferId, " + job.getId());
+//					
+//					mService.deleteUploadSession(uploadUrl, job.getId());
+//					break;
+//					
+//				}
+//			}
+//		}
+//
+//		return CompletableFuture.completedFuture(lastResponseObject);
+//
+//	}
 	
 	
 	/**
@@ -302,60 +302,60 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * @throws Exception
 	 */
 // Stuart version	
-//	private void uploadFileInChunks(Job job) throws Exception {
-//
-//		int fragSize = 320 * 1024;
-//		//long fileSize = content.length;
-//		long fileSize = job.getFileSize();
-//		int numFragments = (int) ((fileSize / fragSize) + 1);
-//		//byte[] buffer = new byte[fragSize];
-//		
-//		// determines percentage complete increment for each chunk.
-//		int uploadTick = 90 / numFragments;  
-//
-//		logger.debug("FileSize being uploaded: " + fileSize);
-//		logger.debug("Number of fragments: " + numFragments);
-//		logger.debug("Upload chunk percentage increase: " + uploadTick);
-//
-//		int count = numFragments; 
-//		long bytesRemaining = fileSize;
-//
-//		while (count > 0) {
-//
-//			int chunkSize = fragSize;
-//			
-//			if (bytesRemaining < chunkSize) {
-//				chunkSize = (int) bytesRemaining;
-//			}
-//			
-//			// Pause
-//			try {
-//			  Thread.sleep(5000);
-//			} catch (InterruptedException e) {
-//			  Thread.currentThread().interrupt();
-//			}
-//			
-//			bytesRemaining = bytesRemaining - chunkSize;
-//				
-//			// Report latest upload to Redis. 
-//			job.setPercentageComplete( job.getPercentageComplete() + uploadTick );
-//			if (job.getPercentageComplete() == 100) {
-//				job.setEndDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
-//				job.setBytesDelivered(fileSize - bytesRemaining);
-//			}
-//			
-//			this.rService.updateJob(job);
-//	
-//			logger.debug("Chunk " + count + " uploaded.");
-//			logger.debug("Bytes remaining to be delivered = " + bytesRemaining); // here
-//			
-//			count--;
-//			
-//		}
-//
-//		//return CompletableFuture.completedFuture(lastResponseObject);
-//
-//	}	
+	private void uploadFileInChunks(Job job) throws Exception {
+
+		int fragSize = 320 * 1024;
+		//long fileSize = content.length;
+		long fileSize = job.getFileSize();
+		int numFragments = (int) ((fileSize / fragSize) + 1);
+		//byte[] buffer = new byte[fragSize];
+		
+		// determines percentage complete increment for each chunk.
+		int uploadTick = 90 / numFragments;  
+
+		logger.debug("FileSize being uploaded: " + fileSize);
+		logger.debug("Number of fragments: " + numFragments);
+		logger.debug("Upload chunk percentage increase: " + uploadTick);
+
+		int count = numFragments; 
+		long bytesRemaining = fileSize;
+
+		while (count > 0) {
+
+			int chunkSize = fragSize;
+			
+			if (bytesRemaining < chunkSize) {
+				chunkSize = (int) bytesRemaining;
+			}
+			
+			// Pause
+			try {
+			  Thread.sleep(5000);
+			} catch (InterruptedException e) {
+			  Thread.currentThread().interrupt();
+			}
+			
+			bytesRemaining = bytesRemaining - chunkSize;
+				
+			// Report latest upload to Redis. 
+			job.setPercentageComplete( job.getPercentageComplete() + uploadTick );
+			if (job.getPercentageComplete() == 100) {
+				job.setEndDeliveryDtm(TimeHelper.getISO8601Dtm(new Date()));
+				job.setBytesDelivered(fileSize - bytesRemaining);
+			}
+			
+			this.rService.updateJob(job);
+	
+			logger.debug("Chunk " + count + " uploaded.");
+			logger.debug("Bytes remaining to be delivered = " + bytesRemaining); // here
+			
+			count--;
+			
+		}
+
+		//return CompletableFuture.completedFuture(lastResponseObject);
+
+	}	
 	
 
 	@Override
