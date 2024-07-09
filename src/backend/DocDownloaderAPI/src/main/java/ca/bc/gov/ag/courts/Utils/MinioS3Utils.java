@@ -62,7 +62,7 @@ public class MinioS3Utils {
 	private void postConstruct() {
 		
 		// Connection to S3 Compatible Server AG server (user creds)
-    	// Note that region is required in the constructor even though it's not required by the AG server. 
+    	// Note that region (east) is required in the constructor even though it's not required by the AG server. 
 		minioClient = MinioClient.builder().endpoint(props.getS3AccessEndpoint())
 				.credentials(props.getS3AccessKeyid(), props.getS3AccessSecretkey())
 				.region("east")
@@ -258,7 +258,7 @@ public class MinioS3Utils {
         return null;
     }
 
-    // Get a file object as a stream from the specified bucket （ Breakpoint download )
+    // Get a file object as a stream from the specified bucket
     public InputStream getObject(String bucketName, String objectName, long offset, Long length) throws InvalidKeyException, ErrorResponseException, InsufficientDataException, InternalException, InvalidResponseException, NoSuchAlgorithmException, ServerException, XmlParserException, IllegalArgumentException, IOException {
 
         boolean flag = bucketExists(bucketName);

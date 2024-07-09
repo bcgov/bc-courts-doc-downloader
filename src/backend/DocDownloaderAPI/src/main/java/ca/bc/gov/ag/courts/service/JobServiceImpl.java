@@ -111,7 +111,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			
 			job.setPercentageComplete(10); 
 			
-			// TODO - uncomment this when bucket pumper working
+			// TODO - Uncomment this when bucket pumper working
 	        //job.setOrdsFileName(resp.getBody().getFilename());
 			
 			job.setOrdsFileName("pZuu5fgHrtr98jekhew.pdf");
@@ -215,8 +215,6 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		logger.debug("FileSize being uploaded: " + fileSize);
 		logger.debug("Number of fragments: " + numFragments);
 		logger.debug("Upload chunk percentage increase: " + uploadTick);
-
-		int bytesRead = 0;
 
 		JSONObject lastResponseObject = null;
 
@@ -432,12 +430,22 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * S3 timeout callback
 	 * 
 	 * @param msg
+	 * @throws Exception 
 	 */
 	public void onS3DocumentTimeout(String msg, Job job) {
-		logger.debug("Received a timeout message on S3DocumentTimeout: " + msg);
 		
-		// TODO - report to redis 
+		logger.error("Received a timeout message on S3DocumentTimeout: " + msg);
 		
+		// Report timeout error to Redis. 
+		job.setError(true);
+		job.setLastErrorMessage("File transfer failure. S3 Document Storage time out error.");
+		try {
+			this.rService.updateJob(job);
+			MDC.remove(job.getId());
+			Thread.currentThread().interrupt();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 
