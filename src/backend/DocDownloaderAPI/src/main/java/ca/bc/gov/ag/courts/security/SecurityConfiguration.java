@@ -45,7 +45,6 @@ public class SecurityConfiguration {
 
 	@Bean
 	public InMemoryUserDetailsManager userDetailsService() {
-		System.out.println("PROPS USERNAME = " + props.getApplicationUsername());
 		UserDetails user = User.builder().username(props.getApplicationUsername())
 				.password(passwordEncoder().encode(props.getApplicationPassword())).roles("USER").build();
 		return new InMemoryUserDetailsManager(user);

@@ -31,15 +31,18 @@ import jakarta.annotation.PostConstruct;
  * 
  * Main Job Processing service. 
  * 
- * This service provides generates an Async process to completely service 1 document push request to OneDrive.
+ * This service provides generates an Async process to service 1 document push request to OneDrive.
  * 
  * Steps: 
  * 
- * 	1.) ORDS call is made for document which returns synchronously. 
- *  2.) Validate the file has arrived on the intermediate S3 drive location. 
+ * 	1.) ORDS call is made for document to be placed on NFS.
+ *  2.) (ISB) 'Bucket Pumper' pushed file to the S3 storage bucket.  
+ *  2.) Use the S3PollerService to watch for the file to appear on the intermediate S3 storage. 
  *  3.) Request a file upload session URL from MS Graph.
- *  4.) Sequentially upload the file in chunks until complete. 
- * 
+ *  4.) Sequentially pull from the S3 input stream and push to the MS Graph OneDrive location until the stream is empty.  
+ *  
+ * During the above, percentage complete, and or errors, are written to Redis by way of the Redis Client.  
+ *  
  * As single access token is required to initiate the MS Graph Upload session only.  
  * 
  * @author 176899
@@ -111,17 +114,16 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			
 			job.setPercentageComplete(10); 
 			
-			// TODO - Uncomment this when bucket pumper working
+			// TODO - Uncomment this when bucket pumper working. Remove next line. 
 	        //job.setOrdsFileName(resp.getBody().getFilename());
-			
 			job.setOrdsFileName("pZuu5fgHrtr98jekhew.pdf");
+			
 			job.setMimeType(resp.getBody().getMimetype());
 			job.setFileSize(Long.parseLong(resp.getBody().getSizeval()));
 			
 			// Update Redis after sync ORDS push to intermediate NFS storage. 
 			rService.updateJob(job);
 			
-			// TODO - Commence polling for the presence of the file landing in the S3 storage.
 			// Once the file has been found on the S3 storage, the onS3DocumentArrival method is called to initiate the MS Graph push. 
 			pService.PollS3ForFile(job.getOrdsFileName(), this, job);
 			
@@ -219,7 +221,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		JSONObject lastResponseObject = null;
 
 		// DataInputstream is used below as it provides the ability to completely 
-		// load the buffer with data each time it reads from the incoming stream. If the 
+		// load the buffer with data each time it reads from the incoming stream. If a 
 		// conventional InputStream was used, the buffer is not guaranteed to be filled on 
 		// each Read() resulting in many more chunks being uploaded. 
 		try (DataInputStream dis = new DataInputStream(fileStream)) {
@@ -409,7 +411,6 @@ public class JobServiceImpl implements JobService, JobEventListener {
 			InputStream fileStream = sService.downloadObject(props.getS3AccessBucket(), job.getOrdsFileName());
 			
 			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, fileStream, sessionUrl);
-			//CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, fileStream, sessionUrl);
 			JSONObject mResp = uploadResponse.get();
 			logger.debug(mResp.toString());
 			
@@ -449,6 +450,12 @@ public class JobServiceImpl implements JobService, JobEventListener {
 		
 	}
 
+	/**
+	 * 
+	 * processTerminate
+	 * 
+	 * @param request
+	 */
 	@Override
 	@Async
 	public void processTerminate(@Valid FileterminateRequest request) {
@@ -468,7 +475,9 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	/**
 	 * 
 	 * Test to determine if jobId already exists
-	 *  
+	 * 
+	 * @param jobId
+	 * @return
 	 */
 	private boolean jobExists(String jobId) {
 		

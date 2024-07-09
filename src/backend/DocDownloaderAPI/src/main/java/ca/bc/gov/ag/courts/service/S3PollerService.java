@@ -32,7 +32,7 @@ public class S3PollerService {
 	
 	@PostConstruct
 	public void init() throws UnknownHostException {
-		logger.info("S3 Poller Service started.");
+		logger.info("S3 Poller Service started. Timeout: " + props.getS3PollerTimeoutMinutes() + " minutes.");
 	}
 	
 	/**
@@ -55,8 +55,7 @@ public class S3PollerService {
 			
             logger.debug("Polling started for fileName: " + fileName);
             
-            future.get(10, TimeUnit.MINUTES);  
-            
+            future.get(Long.valueOf(props.getS3PollerTimeoutMinutes()), TimeUnit.MINUTES);    
             
             service.onS3DocumentArrival("Document found", job);
             
@@ -98,7 +97,7 @@ public class S3PollerService {
 
 	/**
 	 * 
-	 * Queries the S3 bucket for the given file nam
+	 * Queries the S3 bucket for the given file name
 	 * 
 	 * @param fileName
 	 * @return
@@ -112,8 +111,7 @@ public class S3PollerService {
 			Thread.sleep(4000);
 			return sService.objectExists(props.getS3AccessBucket(), fileName);
 		} catch (Exception e) {
-			logger.error("S3PollerService: Error while querying S3 object store: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error while querying S3 object store: " + e.getMessage());
 			return false; 
 		}
 	}
