@@ -356,6 +356,15 @@ public class JobServiceImpl implements JobService, JobEventListener {
 
 	@Override
 	public void onCompletion(Job job) {
+		
+		//TODO - Uncomment housekeeping when permissions set properly  
+//		try {
+//			this.sService.removeObject(props.getS3AccessBucket(), job.getOrdsFileName());
+//		} catch (Exception ex) {
+//			logger.error("Unable to remove S3 filename: " + job.getOrdsFileName() + ", Error: " + ex.getMessage());
+//			ex.printStackTrace();
+//		}
+		
 		logger.info("Job completed.");
 	}
 
@@ -385,30 +394,57 @@ public class JobServiceImpl implements JobService, JobEventListener {
 	 * 
 	 * @param msg
 	 */
+	//TODO - Original Version
+//	public void onS3DocumentArrival(String msg, Job job) {
+//		
+//		logger.debug("Received a message on S3DocumentArrival: " + msg);
+//		logger.debug("Initiating MS Graph push");
+//		
+//		try {
+//			
+//			// Initiate MS Graph upload process by acquiring the session URL. (requires connectivity for O/S - See SCV-457). 
+//			String token = aService.GetAccessToken();
+//			
+//			String sessionUrl = mService.createUploadSessionFromUserId(
+//					token, mService.GetUserId(token, job.getEmail()), job.getFilePath(), job.getFileName()
+//			);
+//			
+//			//TODO - Remove me for prod - Loads a dummy file instead of the one pulled from the object store.  
+//			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("test.pdf");
+//			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("15394_3M.pdf");
+//			
+//			// Fetch the file from the S3 store. 
+//			InputStream fileStream = sService.downloadObject(props.getS3AccessBucket(), job.getOrdsFileName());
+//			
+//			CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job, fileStream, sessionUrl);
+//			JSONObject mResp = uploadResponse.get();
+//			logger.debug(mResp.toString());
+//			
+//	        this.onCompletion(job); // success callback
+//        
+//        
+//		} catch (Exception ex) {
+//			this.onError(job, ex);
+//            Thread.currentThread().interrupt();
+//		}  finally {
+//			MDC.remove(job.getId());
+//		}
+//		
+//	}
+	
+	/**
+	 * 
+	 * S3 delivery callback - Initiates the MS Graph upload. 
+	 * 
+	 * @param msg
+	 */
+	// Stuart Version
 	public void onS3DocumentArrival(String msg, Job job) {
 		
 		logger.debug("Received a message on S3DocumentArrival: " + msg);
 		logger.debug("Initiating MS Graph push");
 		
 		try {
-			
-			// Initiate MS Graph upload process by acquiring the session URL. (requires connectivity for O/S - See SCV-457). 
-			String token = aService.GetAccessToken();
-			
-			String sessionUrl = mService.createUploadSessionFromUserId(
-					token, mService.GetUserId(token, job.getEmail()), job.getFilePath(), job.getFileName()
-			);
-			
-			//TODO - Remove me for prod - Loads a dummy file instead of the one pulled from the object store.  
-			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("test.pdf");
-			//byte[] bytes = TestHelper.fetchFileResourceAsBytes("15394_3M.pdf");
-			
-			// Fetch the file from the S3 store. 
-			//InputStream fileStream = sService.downloadObject(props.getS3AccessBucket(), job.getOrdsFileName());
-			
-			//CompletableFuture<JSONObject> uploadResponse = uploadFileInChunks(job);
-			//JSONObject mResp = uploadResponse.get();
-			//logger.debug(mResp.toString());
 			
 			uploadFileInChunks(job);
 			
