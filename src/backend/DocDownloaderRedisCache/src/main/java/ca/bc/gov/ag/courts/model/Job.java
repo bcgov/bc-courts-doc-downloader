@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @JsonPropertyOrder({ "id", "guid", "correlationId", "applicationId",  "email", "ordsTimeout", "graphTimeout",
 		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "ordsFileName", "fileName", "filePath",
 		"bytesDelivered", "mimeType" })
-@RedisHash("Job")
+@RedisHash(value="Job",timeToLive = 18000)
 @RequiredArgsConstructor
 /**
  * 
