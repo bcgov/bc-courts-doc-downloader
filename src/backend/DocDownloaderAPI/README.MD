@@ -60,7 +60,7 @@ Once enviromental variables have been set in the IDE of your choice, AND the Red
   
 ### Actuator
 
-This API includes a number of actuator endpoints providing various metrics. Largely these may be used for determing JVM memory usage, memory tuning or troubleshooting.
+This API includes a number of actuator endpoints providing various metrics. Largely these may be used for determing JVM memory usage, memory tuning, or troubleshooting.
 
 **All Metrics**  
 https://server.name:[port]/actuator/metrics
@@ -70,7 +70,7 @@ https://server.name:[port]/actuator/metrics/jvm.memory.max
 https://server.name:[port]/actuator/metrics/jvm.memory.used  
 
 
-### API Operations categories
+### API Operations 
 
 For a complete list of the available API operations, see [here](https://github.com/bcgov/bc-courts-doc-downloader/blob/develop/src/backend/DocDownloaderAPI/DocDownloader-spec.yaml).
 
@@ -78,11 +78,12 @@ For a complete list of the available API operations, see [here](https://github.c
 
 ## DevOps Process
 
+All changes to the API must be made as branches from the 'develop' branch. After a successful PR, a feature branch is merged back to 'develop' which kicks off the CiCD pipeline and automatically deploys the code to dc2d23-dev (docdownloader-api deployment). 
 
 
 ## TEST/PROD Promotion
 
-TBD
+To push the same image to TEST and/or PRODUCTION, (tbd).  
 
 ### License
 
