@@ -28,6 +28,14 @@
 		<swagger-core-version>2.2.21</swagger-core-version>
 		<splunk-library-javalogging.version>1.11.8</splunk-library-javalogging.version>
 	</properties>
+	
+	<repositories>
+		<repository>
+			<id>splunk-artifactory</id>
+			<name>Splunk Releases</name>
+			<url>https://splunk.jfrog.io/splunk/ext-releases-local</url> 
+		</repository>
+	</repositories>
 
 	<dependencies>
 	
@@ -194,32 +202,16 @@
 			<artifactId>logback-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.splunk.logging</groupId>
+			<artifactId>splunk-library-javalogging</artifactId>
+			<version>${splunk-library-javalogging.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>
 		</dependency>
 
 	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>splunk</id>
-			<repositories>
-				<repository>
-					<id>splunk-artifactory</id>
-					<name>Splunk Releases</name>
-					<url>https://splunk.jfrog.io/splunk/ext-releases-local</url>
-				</repository>
-			</repositories>
-
-			<dependencies>
-				<dependency>
-					<groupId>com.splunk.logging</groupId>
-					<artifactId>splunk-library-javalogging</artifactId>
-					<version>${splunk-library-javalogging.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
 
 	<build>
 		<plugins>
