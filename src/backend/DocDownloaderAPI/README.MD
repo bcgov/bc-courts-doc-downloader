@@ -53,17 +53,32 @@ The following environmental variable must available to this API at runtime:
 
 ### Setting up and running the application locally
 
-TBD
+Once enviromental variables have been set in the IDE of your choice, AND the Redis Cache Client application is running (See here) launch the API with: 
 
+> mvn clean install  
+> mvn spring-boot:run
+  
 ### Actuator
 
-TBD
+This API includes a number of actuator endpoints providing various metrics. Largely these may be used for determing JVM memory usage, memory tuning or troubleshooting.
+
+**All Metrics**  
+https://server.name:[port]/actuator/metrics
+
+**Memory Related**  
+https://server.name:[port]/actuator/metrics/jvm.memory.max  
+https://server.name:[port]/actuator/metrics/jvm.memory.used  
+
 
 ### API Operations categories
 
-TBD
+For a complete list of the available API operations, see [here](https://github.com/bcgov/bc-courts-doc-downloader/blob/develop/src/backend/DocDownloaderAPI/DocDownloader-spec.yaml).
+
+**Note:** The yaml spec file may be loaded to [here](https://editor.swagger.io/) for easier viewing. 
 
 ## DevOps Process
+
+
 
 ## TEST/PROD Promotion
 
