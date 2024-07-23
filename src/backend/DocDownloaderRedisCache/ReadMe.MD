@@ -36,7 +36,7 @@ The following environmental variable must available to this API at runtime:
 
 > docker pull redis:latest
 
-Run the new container in Docker Desktop using ports 6379:6379. 
+Run the new container in Docker Desktop using ports 6379:6379.  
 In a terminal window for the running container execute the following commands:  
 
 > redis-cli
