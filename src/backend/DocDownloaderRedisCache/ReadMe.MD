@@ -37,11 +37,11 @@ The following environmental variable must available to this API at runtime:
 > docker pull redis:latest
 
 Run the new container in Docker Desktop using ports 6379:6379.  
-In a terminal window for the running container execute the following commands:  
+In a terminal window of the running container, execute the following commands:  
 
-> redis-cli
-> config set requirepass admin
-> quit
+> redis-cli  
+> config set requirepass admin  
+> quit  
 
 Now install and launch this application from the IDE of your choice. 
 
