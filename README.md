@@ -24,9 +24,9 @@ The DocDownloaderAPI receives a request and immediately responds to the caller w
 * Call for the file to be 'pushed' from the Object store to the intermediate NFS storage via ORDS. 
 * Update the Redis Client after a successful call to push. 
 * Commence polling of the S3 storage for the arrival of the expected file. Note: A background process moves any new files written to the NFS to the S3 exchange bucket. On a succesful write to the S3 storage, the file is deleted from the NFS.
-* Once acknowledgement is receive that the file has landed in the S3 storage, a new upload session is created with the MS Graph API which facilittate s the movement of the file, in chunks between the S3 storage bucket and a user's OneDRive location using streams to keep the memory requirement low. After each successful push of a file chunk, the Redis Client is informed. 
-* Once the requested file arrives at the OneDrive location, a final call is made to the S3 storage to delete the file and completing the process. 
-* At any time during the above processing, the application requesting the file may request the file transfer status which returns with a percentage complete or error state.  
+* Once acknowledgement is received that the file has landed in the S3 exchange bucket, a new upload session is created with the MS Graph API which facilittates the movement of the file, in chunks, between the S3 storage bucket and a user's OneDrive location using streams to keep the memory requirement low. After each successful push of a file chunk, the Redis Client is informed. 
+* Once the requested file arrives at the OneDrive location, a final call is made to the S3 storage to delete the file and completing the transfer process. 
+* At any time during the above processing, the application requesting the file may request the file transfer status which includes percentage complete and/or error state.  
 
 
 
