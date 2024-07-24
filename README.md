@@ -16,7 +16,7 @@ The components involved in the document transfer process include:
 | Redis Cache Server  | None			| Installed via Docker | 
 
 
-See the ReadMe.MD file for each component for a complete description of configuration and usage. 
+See the *ReadMe.MD* file for each component for a complete description of configuration and usage. 
 
 ## Pre Download Theory of Operation
  
