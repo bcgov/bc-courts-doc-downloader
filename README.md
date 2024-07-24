@@ -11,8 +11,8 @@ The components involved in the document transfer process include:
 
 | Component              | Repo Path        | Description |
 | ------------------ | --------------------- |------------
-| DocDownloaderAPI | src/backend/DocDownloaderAPI | Main API |
-| DocDownloaderRedisCache | src/backend/DocDownloaderRedisCache | Redis Cache Client API |
+| DocDownloaderAPI | [src/backend/DocDownloaderAPI](https://github.com/bcgov/bc-courts-doc-downloader/tree/develop/src/backend/DocDownloaderAPI) | Main API |
+| DocDownloaderRedisCache | [src/backend/DocDownloaderRedisCache](https://github.com/bcgov/bc-courts-doc-downloader/tree/develop/src/backend/DocDownloaderRedisCache) | Redis Cache Client API |
 | Redis Cache Server  | None			| Installed via Docker | 
 
 
