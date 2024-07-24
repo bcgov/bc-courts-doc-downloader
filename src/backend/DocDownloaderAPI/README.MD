@@ -53,7 +53,7 @@ The following environmental variable must available to this API at runtime:
 
 ### Setting up and running the application locally
 
-Once enviromental variables have been set in the IDE of your choice, AND the Redis Cache Client application is running (See here) launch the API with: 
+Once enviromental variables have been set in the IDE of your choice, AND the Redis Cache Client application is running (See [here](https://github.com/bcgov/bc-courts-doc-downloader/tree/develop/src/backend/DocDownloaderRedisCache)) launch the API with: 
 
 > mvn clean install  
 > mvn spring-boot:run
