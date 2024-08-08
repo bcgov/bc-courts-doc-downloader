@@ -78,8 +78,8 @@ jobs:
           sed -i "s/apitag: .*/apitag: ${{ env.IMAGE_TAG }} # Image Updated on $DATETIME/" ../deploy/test_values.yaml
           sed -i "s/rediscachetag: .*/rediscachetag: ${{ env.IMAGE_TAG }} # Image Updated on $DATETIME/" ../deploy/test_values.yaml
 
-          sed -i "s/apiversion: .*/apiversion: ${{ steps.short_sha.outputs.SHORT_SHA }} # Version Updated on $DATETIME/" ../deploy/test_values.yaml
-          sed -i "s/rediscacheversion: .*/rediscacheversion: ${{ steps.short_sha.outputs.SHORT_SHA }} # Version Updated on $DATETIME/" ../deploy/test_values.yaml
+          sed -i "s/apiversion: .*/apiversion: ${{ steps.short_sha.outputs.SHORT_SHA }}d # Version Updated on $DATETIME/" ../deploy/test_values.yaml
+          sed -i "s/rediscacheversion: .*/rediscacheversion: ${{ steps.short_sha.outputs.SHORT_SHA }}d # Version Updated on $DATETIME/" ../deploy/test_values.yaml
           
           
           # Commit and push the changes
