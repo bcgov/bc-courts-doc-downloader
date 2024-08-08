@@ -1,56 +1,79 @@
-### Redis Client Application
+### Document Download Redis Client
 
-Provides the API for storing and retrieving document transfer states in a Redis cache (External).
+### Overview 
 
-### Running Client application in IntelliJ
+This application stores and maintains document download status for the Document Download API which is found [here](https://github.com/bcgov/bc-courts-doc-downloader/tree/develop/src/backend/DocDownloaderAPI). 
 
-* Run the main class `ca.bc.gov.ag.courts.RedisCacheApplication`
-* Add to its configuration the JVM options: `-Dspring.profiles.active=dev`
-* Same will apply if running the jar directly.
+## Technical Overview
 
-srcs used in creating this application:
+| Layer              | Technology            |
+| ------------------ | --------------------- |
+| Service            | Java, Springboot      |
+| Application Server | Tomcat (Embedded)     |
+| Runtime            | OpenShift             |
 
-- https://www.baeldung.com/spring-data-redis-tutorial
-- https://github.com/eugenp/tutorials/tree/master/persistence-modules/spring-data-redis
-- https://www.docker.com/blog/how-to-use-the-redis-docker-official-image/#how-to-run-redis-in-docker
+### Dependencies
 
-Operation API endpoints:
+This API depends on a existance of a Redis Cache instance. See below for configuration instructions.  
 
-| HTTP Verb | Path 	    | Comment             |
-|-----------|-----------|---------------------|
-| GET  	    | /jobs     | Report all jobs     |
-| GET 	     | /job/{id} | Get a jobs status   |
-| POST      | /job      | Add a job status    |
-| PUT       | /job/{id} | Update a job status |
-| DEL       | /job/{id} | Remove a Job status |
+### Environmental Variables
 
-### Authentication:
+The following environmental variable must available to this API at runtime:
 
-API is now behind a basic authentication layer.
-The username and password are set in the application.properties file.
+| Name                            | Comment    | Ex. Value |
+| ------------------------------- | ---------------- |---------|
+| REDIS_CACHE_AUTH_CLIENT		  | API Basic Auth User |	user |
+| REDIS_CACHE_AUTH_SECRET	      | API Basic Auth password | password |
+| REDIS_HOST					| Redis Cache server host | http://myHost |
+| REDIS_PORT					| Redis Cache server port | 8080 |
+| REDIS_PROFILE					| Spring Profile | dev |
+| SPLUNK_URL					| Splunk HEC endpoint | http://splunk |
+| SPLUNK_TOKEN					| Splunk HEC token | abcdef |
 
-```properties
-REDIS_CACHE_AUTH_CLIENT for local default to client
-REDIS_CACHE_AUTH_SECRET for local default to secret
-```
+### Setting up and running this application locally
 
-### Redis Application:
+**Redis Docker Container Setup, launch and configure**  
 
-As said, a Redis application should be running in your docker desktop
-in order for the local Client Application to connect and start. To start
-a Redis container (a temp instance that does not save its cache in restarts)
-run the following commands in your terminal:
+> docker pull redis:latest
 
-```shell
-docker pull redis:latest
-docker run --name loc-redis -p 6379:6379 -d redis redis-server --save ''
-```
+Run the new container in Docker Desktop using ports 6379:6379.  
+In a terminal window of the running container, execute the following commands:  
 
-To ensure your application connects to Redis docker instance  
-ensure the application.properties point to the same host and port.
+> redis-cli  
+> config set requirepass admin  
+> quit  
 
-```properties
-spring.redis.host=${REDIS_HOST:127.0.0.1}
-spring.redis.port=${REDIS_PORT:6379}
-```
+Now install and launch this application from the IDE of your choice. 
 
+> mvn clean install  
+> mvn spring-boot:run -P splunk
+
+Assuming Redis Server host and port has been set properly, the application should launch and connect to the Redis Server.  
+
+### Actuator
+
+This API includes a number of actuator endpoints providing various metrics. Largely these may be used for health of the API.
+
+**All Metrics**  
+https://server.name:[port]/actuator/metrics
+
+**Health Status**  
+https://server.name:[port]/actuator/health
+
+### API Operations 
+
+For a complete list of the available API operations, see [here](https://github.com/bcgov/bc-courts-doc-downloader/blob/develop/src/backend/DocDownloaderRedisCache/RedisCacheClient-spec.yaml).
+
+**Note:** The yaml spec file may be loaded to [here](https://editor.swagger.io/) for easier viewing. 
+
+## DevOps Process
+
+All changes to this API must be made as branches from the 'develop' branch. After a successful PR, a feature branch is merged back to 'develop' which kicks off the CiCD pipeline and automatically deploys the code to dc2d23-dev (docdownloader-redis-cache-client deployment). 
+
+## TEST/PROD Promotion
+
+To push the same image to TEST and/or PRODUCTION, (tbd).  
+
+### License
+
+Apache license 2.0

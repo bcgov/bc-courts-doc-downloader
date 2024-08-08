@@ -2,6 +2,7 @@ package ca.bc.gov.ag.courts.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,6 +21,7 @@ import ca.bc.gov.ag.courts.config.AppProperties;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@Profile(value = {"dev", "splunk"}) // Results in no security config when unit testing (e.g. profile is 'test' during unit tests). 
 public class SecurityConfiguration {
 
 	private final AppProperties props;

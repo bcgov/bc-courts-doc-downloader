@@ -13,9 +13,9 @@ import lombok.RequiredArgsConstructor;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "id", "guid", "correlationId", "applicationId",  "email", "ordsTimeout", "graphTimeout",
-		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "fileName", "filePath",
+		"graphSessionUrl", "error", "lastErrorMessage", "startDeliveryDtm", "endDeliveryDtm", "percentageComplete", "ordsFileName", "fileName", "filePath",
 		"bytesDelivered", "mimeType" })
-@RedisHash(value="Job", timeToLive=7200L)
+@RedisHash(value="Job",timeToLive = 18000)
 @RequiredArgsConstructor
 /**
  * 
@@ -54,6 +54,8 @@ public class Job implements Serializable {
 	private String endDeliveryDtm;
 	@JsonProperty("percentageComplete")
 	private Integer percentageComplete;
+	@JsonProperty("ordsFileName")
+	private String ordsFileName;
 	@JsonProperty("fileName")
 	private String fileName;
 	@JsonProperty("filePath")
@@ -163,6 +165,16 @@ public class Job implements Serializable {
 	@JsonProperty("percentageComplete")
 	public void setPercentageComplete(Integer percentageComplete) {
 		this.percentageComplete = percentageComplete;
+	}
+
+	@JsonProperty("ordsFileName")
+	public String getOrdsFileName() {
+		return ordsFileName;
+	}
+
+	@JsonProperty("ordsFileName")
+	public void setOrdsFileName(String ordsFileName) {
+		this.ordsFileName = ordsFileName;
 	}
 
 	@JsonProperty("fileName")
