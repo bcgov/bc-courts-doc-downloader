@@ -428,6 +428,7 @@ public class JobServiceImpl implements JobService, JobEventListener {
         
         
 		} catch (Exception ex) {
+			logger.error("Caught error at onS3DocumentArrival: " + ex.getMessage());
 			this.onError(job, ex);
             Thread.currentThread().interrupt();
 		}  finally {
