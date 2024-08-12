@@ -71,6 +71,8 @@ public class AuthHelper {
 				+ URLEncoder.encode(this.msgEndpoint + ".default",
 						java.nio.charset.StandardCharsets.UTF_8.toString())
 				+ "&grant_type=client_credentials";
+		
+		logger.debug("Parameters: " + parameters);
 
 		HttpURLConnection connection = null;
 		URL url = new URL(this.authority + "oauth2/v2.0/token");
