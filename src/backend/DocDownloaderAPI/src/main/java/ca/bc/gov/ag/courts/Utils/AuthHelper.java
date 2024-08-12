@@ -80,7 +80,8 @@ public class AuthHelper {
 		connection = (HttpURLConnection) url.openConnection();
 		connection.setRequestMethod("POST");
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-		connection.setRequestProperty("Content-Length", "" + Integer.toString(parameters.getBytes().length));
+		//connection.setRequestProperty("Content-Length", "" + Integer.toString(parameters.getBytes().length));
+		//connection.setRequestProperty("Content-Length", Integer.toString(parameters.getBytes().length));
 		connection.setDoOutput(true);
 		connection.connect();
 
