@@ -1,13 +1,15 @@
 package ca.bc.gov.ag.courts.Utils;
 
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
 import java.util.Base64;
 
 import org.json.JSONException;
@@ -71,34 +73,23 @@ public class AuthHelper {
 				+ URLEncoder.encode(this.msgEndpoint + ".default",
 						java.nio.charset.StandardCharsets.UTF_8.toString())
 				+ "&grant_type=client_credentials";
-		
-		logger.debug("Parameters: " + parameters);
 
-		HttpURLConnection connection = null;
 		URL url = new URL(this.authority + "oauth2/v2.0/token");
 		logger.debug("GetAccessToken calling MS endpoint " + url.toString());
-		connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestMethod("POST");
-		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-		//connection.setRequestProperty("Content-Length", "" + Integer.toString(parameters.getBytes().length));
-		//connection.setRequestProperty("Content-Length", Integer.toString(parameters.getBytes().length));
-		connection.setDoOutput(true);
-		connection.connect();
-
-		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
-		out.write(parameters);
-		out.close();
-
-		String response = HttpClientHelper.getResponseStringFromConn(connection);
-		int responseCode = connection.getResponseCode();
-
-		if (!HttpStatus.valueOf(responseCode).is2xxSuccessful()) {
-			logger.error("Token request failure. Response: " + response);
-		} else {
-			logger.debug("Token request response: " + response);
-		}
 		
-		JSONObject jResponse = HttpClientHelper.processResponse(responseCode, response);
+		HttpClient client = HttpClient.newHttpClient();
+		
+		HttpRequest request = HttpRequest.newBuilder()
+				  .uri(URI.create(this.authority + "oauth2/v2.0/token"))
+				  .POST(BodyPublishers.ofString(parameters))
+				  .build();
+
+		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+		
+		logger.debug("Token response status code: " + response.statusCode());
+		logger.debug("Token response body: " + response.body());
+		
+		JSONObject jResponse = HttpClientHelper.processResponse(response.statusCode(), response.body());
 		
 		if (jResponse.getInt("responseCode") == HttpStatus.OK.value())  
 			return jResponse.getJSONObject("responseMsg").getString("access_token");
