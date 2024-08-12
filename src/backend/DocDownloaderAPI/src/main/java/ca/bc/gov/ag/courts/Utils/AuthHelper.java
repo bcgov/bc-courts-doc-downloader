@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Base64;
 
 import org.json.JSONException;
@@ -82,6 +83,7 @@ public class AuthHelper {
 		HttpRequest request = HttpRequest.newBuilder()
 				  .uri(URI.create(this.authority + "oauth2/v2.0/token"))
 				  .POST(BodyPublishers.ofString(parameters))
+				  .timeout(Duration.ofSeconds(30))
 				  .build();
 
 		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
