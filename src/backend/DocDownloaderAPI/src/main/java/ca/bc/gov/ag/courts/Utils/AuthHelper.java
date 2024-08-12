@@ -85,7 +85,7 @@ public class AuthHelper {
 		connection.setDoOutput(true);
 		connection.connect();
 
-		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
+		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
 		out.write(parameters);
 		out.close();
 
