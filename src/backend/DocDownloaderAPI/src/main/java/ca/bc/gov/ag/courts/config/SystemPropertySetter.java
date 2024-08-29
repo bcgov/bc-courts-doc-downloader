@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.annotation.PostConstruct;
 
 /**
@@ -41,7 +42,6 @@ public class SystemPropertySetter {
 	@Value("${application.proxy.port}")
 	private String appProxyPort;
 	
-	// boolean
 	@Value("${application.use.proxy}")
 	private String appUseProxy;
 	
@@ -51,12 +51,15 @@ public class SystemPropertySetter {
 	@PostConstruct
 	public void setProperty() {
 		
-		logger.info("Setting JVM System proxy values.");
-		
-		System.setProperty("https.proxyHost", appProxyHost);
-		System.setProperty("https.proxyPort", appProxyPort);
-		System.setProperty("java.net.useSystemProxies", appUseProxy);
-		System.setProperty("http.nonProxyHosts", appNoProxy);
+		if ( !StringUtils.isEmpty(appUseProxy) || appUseProxy == "true" ) {
+			logger.info("Setting JVM System proxy values.");
+			System.setProperty("https.proxyHost", appProxyHost);
+			System.setProperty("https.proxyPort", appProxyPort);
+			System.setProperty("java.net.useSystemProxies", appUseProxy);
+			System.setProperty("http.nonProxyHosts", appNoProxy);
+		} else {
+			logger.info("Not using JVM System proxy values.");
+		}
 	}
 
 }
