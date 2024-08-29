@@ -28,5 +28,9 @@ EXPOSE 8080
 
 COPY --from=build ./target/${SERVICE_NAME}-*.jar /deployments/service.jar
 
+USER root
+COPY microsoft_graph.crt microsoft_graph.crt
+RUN keytool -import -alias microsoftgraph -keystore $JAVA_HOME/lib/security/cacerts -file microsoft_graph.crt -storepass changeit -noprompt
+
 CMD ["java", "-jar", "/deployments/service.jar"]
 #############################################################################################
