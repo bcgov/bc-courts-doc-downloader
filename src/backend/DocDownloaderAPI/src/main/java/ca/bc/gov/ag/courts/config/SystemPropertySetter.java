@@ -51,12 +51,18 @@ public class SystemPropertySetter {
 	@PostConstruct
 	public void setProperty() {
 		
-		logger.info("Setting JVM System proxy values.");
+		logger.info("Setting JVM System proxy values.");		
 		
 		System.setProperty("https.proxyHost", appProxyHost);
 		System.setProperty("https.proxyPort", appProxyPort);
 		System.setProperty("java.net.useSystemProxies", appUseProxy);
 		System.setProperty("http.nonProxyHosts", appNoProxy);
+
+		logger.info("https.proxyHost: " + System.getProperty("https.proxyHost"));
+		logger.info("https.proxyPort: " + System.getProperty("https.proxyPort"));
+		logger.info("java.net.useSystemProxies: " + System.getProperty("java.net.useSystemProxies"));
+		logger.info("http.nonProxyHosts: " + System.getProperty("http.nonProxyHosts"));
+		
 	}
 
 }
