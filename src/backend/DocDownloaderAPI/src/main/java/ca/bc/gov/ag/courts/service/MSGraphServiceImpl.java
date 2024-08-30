@@ -212,6 +212,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 			uploadConnection.setRequestProperty("Content-Range", range);
 			uploadConnection.setDoOutput(true);
 			logger.debug("uploadConnection: " + uploadConnection);
+			uploadConnection.connect();
 			logger.debug("javax.net.ssl.trustStrore: " +System.getProperty("javax.net.ssl.trustStrore"));
 			OutputStream outputStream = uploadConnection.getOutputStream();
 
