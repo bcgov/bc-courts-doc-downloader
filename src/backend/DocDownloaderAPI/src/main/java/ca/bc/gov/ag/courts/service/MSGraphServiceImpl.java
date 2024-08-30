@@ -211,11 +211,15 @@ public class MSGraphServiceImpl implements MSGraphService {
 
 			uploadConnection.setRequestProperty("Content-Range", range);
 			uploadConnection.setDoOutput(true);
+			logger.debug("uploadConnection: " + uploadConnection);
 			OutputStream outputStream = uploadConnection.getOutputStream();
+
+			logger.debug("Before write : " + chunk);
 			outputStream.write(chunk);
 			outputStream.flush();
 			outputStream.close();
 
+			logger.debug("After write : " + chunk);
 			String response = HttpClientHelper.getResponseStringFromConn(uploadConnection);
 			int responseCode = uploadConnection.getResponseCode();
 
