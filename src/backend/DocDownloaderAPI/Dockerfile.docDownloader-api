@@ -30,12 +30,37 @@ COPY --from=build ./target/${SERVICE_NAME}-*.jar /deployments/service.jar
 
 #Adding certs to trusted certs java
 USER root
-COPY microsoft_graph.crt microsoft_graph.crt
-COPY objectstore_gov_bc_ca.crt objectstore_gov_bc_ca.crt
-COPY _.sharepoint_com.crt _.sharepoint_com.crt
-RUN keytool -import -alias microsoftgraph -keystore $JAVA_HOME/lib/security/cacerts -file microsoft_graph.crt -storepass changeit -noprompt
-RUN keytool -import -alias objectstoregovbcca -keystore $JAVA_HOME/lib/security/cacerts -file objectstore_gov_bc_ca.crt -storepass changeit -noprompt
-RUN keytool -import -alias __sharepoint_com -keystore $JAVA_HOME/lib/security/cacerts -file _.sharepoint_com.crt -storepass changeit -noprompt
+
+RUN openssl s_client -host graph.microsoft.com -port 443 -showcerts 2>&1 | \
+    sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > tempmicrosoftgraph.pem \
+    && openssl x509 -in tempmicrosoftgraph.pem -out realmicrosoftgraph.pem \
+    && keytool -importcert -file ./realmicrosoftgraph.pem -keystore \
+    $JAVA_HOME/lib/security/cacerts -alias microsoftgraph -storepass \
+    changeit --noprompt \
+    && rm -f realmicrosoftgraph.pem tempmicrosoftgraph.pem
+	
+RUN openssl s_client -host ag-pssg-sharedservices.objectstore.gov.bc.ca -port 443 -showcerts 2>&1 | \
+    sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > tempobjectstoregovbcca.pem \
+    && openssl x509 -in tempobjectstoregovbcca.pem -out objectstoregovbcca.pem \
+    && keytool -importcert -file ./objectstoregovbcca.pem -keystore \
+    $JAVA_HOME/lib/security/cacerts -alias objectstoregovbcca -storepass \
+    changeit --noprompt \
+    && rm -f objectstoregovbcca.pem tempobjectstoregovbcca.pem
+
+RUN openssl s_client -host bccourtsca-my.sharepoint.com -port 443 -showcerts 2>&1 | \
+    sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > temp_sharepoint_com.pem \
+    && openssl x509 -in temp_sharepoint_com.pem -out real_sharepoint_com.pem \
+    && keytool -importcert -file ./real_sharepoint_com.pem -keystore \
+    $JAVA_HOME/lib/security/cacerts -alias _sharepoint_com -storepass \
+    changeit --noprompt \
+    && rm -f real_sharepoint_com.pem temp_sharepoint_com.pem
+
+#COPY microsoft_graph.crt microsoft_graph.crt
+#COPY objectstore_gov_bc_ca.crt objectstore_gov_bc_ca.crt
+#COPY _.sharepoint_com.crt _.sharepoint_com.crt
+#RUN keytool -import -alias microsoftgraph -keystore $JAVA_HOME/lib/security/cacerts -file microsoft_graph.crt -storepass changeit -noprompt
+#RUN keytool -import -alias objectstoregovbcca -keystore $JAVA_HOME/lib/security/cacerts -file objectstore_gov_bc_ca.crt -storepass changeit -noprompt
+#RUN keytool -import -alias __sharepoint_com -keystore $JAVA_HOME/lib/security/cacerts -file _.sharepoint_com.crt -storepass changeit -noprompt
 
 CMD ["java", "-jar", "/deployments/service.jar"]
 #############################################################################################
