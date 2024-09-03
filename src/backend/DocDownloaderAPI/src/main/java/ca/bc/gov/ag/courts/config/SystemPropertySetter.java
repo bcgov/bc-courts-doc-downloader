@@ -67,6 +67,7 @@ public class SystemPropertySetter {
 		logger.info("java.net.useSystemProxies: " + System.getProperty("java.net.useSystemProxies"));
 		logger.info("http.nonProxyHosts: " + System.getProperty("http.nonProxyHosts"));
 		logger.info("java.home: " + System.getProperty("java.home"));
+		logger.info("javax.net.ssl.trustStore: " + System.getProperty("javax.net.ssl.trustStore"));
 		
 	}
 

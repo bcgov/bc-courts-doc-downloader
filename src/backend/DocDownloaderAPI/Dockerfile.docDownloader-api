@@ -57,10 +57,10 @@ RUN openssl s_client -host bccourtsca-my.sharepoint.com -port 443 -showcerts 2>&
 
 #COPY microsoft_graph.crt microsoft_graph.crt
 COPY objectstore_gov_bc_ca.crt objectstore_gov_bc_ca.crt
-#COPY _.sharepoint_com.crt _.sharepoint_com.crt
+COPY microsoft_azure.crt microsoft_azure.crt
 #RUN keytool -import -alias microsoftgraph -keystore $JAVA_HOME/lib/security/cacerts -file microsoft_graph.crt -storepass changeit -noprompt
 RUN keytool -import -alias objectstoregovbcca -keystore $JAVA_HOME/lib/security/cacerts -file objectstore_gov_bc_ca.crt -storepass changeit -noprompt
-#RUN keytool -import -alias __sharepoint_com -keystore $JAVA_HOME/lib/security/cacerts -file _.sharepoint_com.crt -storepass changeit -noprompt
+RUN keytool -import -alias microsoft_azure -keystore $JAVA_HOME/lib/security/cacerts -file microsoft_azure.crt -storepass changeit -noprompt
 
 CMD ["java", "-jar", "/deployments/service.jar"]
 #############################################################################################
