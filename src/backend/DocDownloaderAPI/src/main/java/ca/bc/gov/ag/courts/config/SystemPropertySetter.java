@@ -59,6 +59,7 @@ public class SystemPropertySetter {
 		System.setProperty("http.nonProxyHosts", appNoProxy);
 		
 		System.setProperty("javax.net.debug", "all");
+		System.setProperty("javax.net.ssl.trustStore", "opt/java/openjdk/lib/security/cacerts");
 		System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
 
 		logger.info("https.proxyHost: " + System.getProperty("https.proxyHost"));
