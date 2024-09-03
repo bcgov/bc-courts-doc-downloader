@@ -64,6 +64,7 @@ public class SystemPropertySetter {
 		logger.info("https.proxyPort: " + System.getProperty("https.proxyPort"));
 		logger.info("java.net.useSystemProxies: " + System.getProperty("java.net.useSystemProxies"));
 		logger.info("http.nonProxyHosts: " + System.getProperty("http.nonProxyHosts"));
+		logger.info("java.home: " + System.getProperty("java.home"));
 		
 	}
 
