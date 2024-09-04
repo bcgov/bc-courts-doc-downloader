@@ -59,7 +59,6 @@ public class SystemPropertySetter {
 		System.setProperty("http.nonProxyHosts", appNoProxy);
 		
 		System.setProperty("javax.net.debug", "ssl");
-		System.setProperty("com.sun.net.ssl.checkRevocation", "false");
 
 		logger.info("https.proxyHost: " + System.getProperty("https.proxyHost"));
 		logger.info("https.proxyPort: " + System.getProperty("https.proxyPort"));

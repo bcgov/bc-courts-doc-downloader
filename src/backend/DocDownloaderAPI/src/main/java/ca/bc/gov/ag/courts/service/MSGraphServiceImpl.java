@@ -200,7 +200,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 		try {
 
 			logger.debug("uploadUrl: " + uploadUrl);
-			HttpsURLConnection uploadConnection = (HttpsURLConnection) new URL(uploadUrl).openConnection();
+			HttpURLConnection uploadConnection = (HttpURLConnection) new URL(uploadUrl).openConnection();
 			uploadConnection.setRequestMethod("PUT");
 			uploadConnection.setRequestProperty("Accept", "application/json"); // a must otherwise 400 bad requests will occur.
 			uploadConnection.setRequestProperty("Content-Length", Integer.toString(chunk.length));
@@ -213,7 +213,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 			range = StringUtils.replace(range, "end", Integer.toString(count * fragSize + chunkSize - 1));
 			range = StringUtils.replace(range, "fileSize", Long.toString(fileSize));
 
-			logger.debug("CertInfo: " + getCertInfo(uploadConnection));
+			//logger.debug("CertInfo: " + getCertInfo(uploadConnection));
 			logger.debug("Uploading content-range: " + range);
 
 			uploadConnection.setRequestProperty("Content-Range", range);
