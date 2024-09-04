@@ -1,10 +1,14 @@
 package ca.bc.gov.ag.courts.service;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLPeerUnverifiedException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -25,6 +29,8 @@ import org.springframework.web.client.RestTemplate;
 import ca.bc.gov.ag.courts.Utils.HttpClientHelper;
 import ca.bc.gov.ag.courts.config.AppProperties;
 import jakarta.annotation.PostConstruct;
+
+import java.security.cert.Certificate;
 
 
 /**
@@ -194,7 +200,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 		try {
 
 			logger.debug("uploadUrl: " + uploadUrl);
-			HttpURLConnection uploadConnection = (HttpURLConnection) new URL(uploadUrl).openConnection();
+			HttpsURLConnection uploadConnection = (HttpsURLConnection) new URL(uploadUrl).openConnection();
 			uploadConnection.setRequestMethod("PUT");
 			uploadConnection.setRequestProperty("Accept", "application/json"); // a must otherwise 400 bad requests will occur.
 			uploadConnection.setRequestProperty("Content-Length", Integer.toString(chunk.length));
@@ -207,6 +213,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 			range = StringUtils.replace(range, "end", Integer.toString(count * fragSize + chunkSize - 1));
 			range = StringUtils.replace(range, "fileSize", Long.toString(fileSize));
 
+			logger.debug("CertInfo: " + getCertInfo(uploadConnection));
 			logger.debug("Uploading content-range: " + range);
 
 			uploadConnection.setRequestProperty("Content-Range", range);
@@ -315,5 +322,40 @@ public class MSGraphServiceImpl implements MSGraphService {
 		}
 
 	}
+
+	/**
+   * Get detailed certificate information about an HttpsURLConnection into a string
+   * This is quite useful for debugging purposes but not much else.
+   *
+   * @param theConnection the HttpsURLConnection which we are debugging
+   */
+  public static String getCertInfo (HttpsURLConnection theConnection) throws IOException
+  {
+    StringBuilder resultBuffer = new StringBuilder ();
+    if (theConnection != null)
+    {
+      try
+      {
+        resultBuffer.append ("Response Code : " + theConnection.getResponseCode ()).append ("\n");
+        resultBuffer.append ("Cipher Suite : " + theConnection.getCipherSuite ()).append ("\n");
+        resultBuffer.append ("\n");
+
+        Certificate[] certificateList = theConnection.getServerCertificates ();
+        for (Certificate currCert : certificateList)
+        {
+          resultBuffer.append ("Certificate Type : " + currCert.getType ()).append ("\n");
+          resultBuffer.append ("Certificate Hash Code : " + currCert.hashCode ()).append ("\n");
+          resultBuffer.append ("Certificate Public Key Algorithm : " + currCert.getPublicKey ().getAlgorithm ()).append ("\n");
+          resultBuffer.append ("Certificate Public Key Format : " + currCert.getPublicKey ().getFormat ()).append ("\n");
+          resultBuffer.append ("\n");
+        }
+      }
+      catch (SSLPeerUnverifiedException e)
+      {
+        throw new IOException ("ERROR: SSL Peer Unverified. URL: " + theConnection + ".\nMessage: " + e.getMessage ());
+      }
+    }
+    return resultBuffer.toString ();
+  }
 
 }
