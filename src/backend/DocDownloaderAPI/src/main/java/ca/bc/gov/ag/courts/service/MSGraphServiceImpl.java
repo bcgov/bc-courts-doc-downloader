@@ -200,7 +200,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 		try {
 
 			logger.debug("uploadUrl: " + uploadUrl);
-			HttpURLConnection uploadConnection = (HttpURLConnection) new URL(uploadUrl).openConnection();
+			HttpsURLConnection uploadConnection = (HttpsURLConnection) new URL(uploadUrl).openConnection();
 			uploadConnection.setRequestMethod("PUT");
 			uploadConnection.setRequestProperty("Accept", "application/json"); // a must otherwise 400 bad requests will occur.
 			uploadConnection.setRequestProperty("Content-Length", Integer.toString(chunk.length));
