@@ -229,7 +229,7 @@ public class MSGraphServiceImpl implements MSGraphService {
 
 		} catch (Exception ex) {
 			logger.error(ex.getMessage());
-			ex.printStackTrace();
+			ex.printStackTrace(System.out);
 			throw ex;
 		}
 
