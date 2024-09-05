@@ -66,5 +66,5 @@ RUN keytool -import -alias sharepoint_com -keystore $JAVA_HOME/lib/security/cace
 RUN keytool -import -alias microsoft_azure -keystore $JAVA_HOME/lib/security/cacerts -file microsoft_azure.crt -storepass changeit -noprompt
 
 
-CMD ["java", "-jar", "/deployments/service.jar"]
+CMD ["java", "-jar", "-Djavax.net.debug=all" ,"/deployments/service.jar"]
 #############################################################################################
