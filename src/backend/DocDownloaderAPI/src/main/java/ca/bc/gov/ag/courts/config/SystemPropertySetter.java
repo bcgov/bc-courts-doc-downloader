@@ -53,10 +53,17 @@ public class SystemPropertySetter {
 		
 		logger.info("Setting JVM System proxy values.");
 		
+		System.setProperty("javax.net.debug", "all");
 		System.setProperty("https.proxyHost", appProxyHost);
 		System.setProperty("https.proxyPort", appProxyPort);
 		System.setProperty("java.net.useSystemProxies", appUseProxy);
 		System.setProperty("http.nonProxyHosts", appNoProxy);
+
+		logger.info("javax.net.debug",System.getProperty("javax.net.debug"));
+		logger.info("https.proxyHost",System.getProperty("https.proxyHost"));
+		logger.info("https.proxyPort",System.getProperty("https.proxyPort"));
+		logger.info("java.net.useSystemProxies",System.getProperty("java.net.useSystemProxies"));
+		logger.info("http.nonProxyHosts",System.getProperty("http.nonProxyHosts"));
 	}
 
 }
