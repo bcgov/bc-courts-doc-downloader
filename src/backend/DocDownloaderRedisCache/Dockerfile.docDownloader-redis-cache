@@ -1,0 +1,32 @@
+#############################################################################################
+###              Stage where Docker is building spring boot app using maven               ###
+#############################################################################################
+FROM maven:3.8.3-openjdk-17 as build
+
+ARG SERVICE_NAME
+ARG SKIP_TESTS=false
+
+COPY . .
+
+RUN mvn -B clean install \
+        -P splunk \
+        -Dmaven.test.skip=${SKIP_TESTS}
+
+#############################################################################################
+### Stage where Docker is running a java process to run a service built in previous stage ###
+#############################################################################################
+FROM eclipse-temurin:17-jdk-alpine
+
+# ARG MVN_PROFILES
+ARG SERVICE_NAME
+
+RUN apk update
+RUN apk add busybox-extras
+RUN apk --no-cache add curl
+
+EXPOSE 8080
+
+COPY --from=build ./target/${SERVICE_NAME}-*.jar /deployments/service.jar
+
+CMD ["java", "-jar", "/deployments/service.jar"]
+#############################################################################################

@@ -1,0 +1,175 @@
+openapi: 3.0.0
+info:
+  version: 0.0.2
+  title: Document Predownload API
+  description: Document Predownload API 
+servers:
+  - url: "http://localhost:8080"
+tags:
+  - name: Document Predownload API
+paths:
+  /document/upload:
+    post:
+      summary: File tranfer Request
+      tags:
+        - File Transfer
+      description: File transfer Request
+      requestBody:
+        description: File transfer request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/filetransfer_request"
+      responses:
+        '202':
+          description: 'Accepted for processing'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/filetransfer_response"
+  /document/terminate:
+    post:
+      summary: File tranfer termination
+      tags:
+        - File Transfer
+      description: File transfer termination
+      requestBody:
+        description: File transfer termination 
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fileterminate_request"
+      responses:
+        '202':
+          description: 'Accepted for processing'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fileterminate_response"              
+  /document/status/{transferId}:
+   get:
+      summary: Document status endpoint
+      parameters:
+        - in: path
+          name: transferId
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The document transfer Id
+      tags: 
+        - File Transfer
+      description: File Transfer Status Request
+      responses:
+        '200':
+          description: 'Status returned successfully'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/filetransferstatus_response"       
+  /ping:
+   get:
+      summary: Back end connectivity test
+      tags: 
+        - Utilities
+      description: Back end connectivity test
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ping_response"
+components:
+  schemas:
+    filetransfer_request:
+      type: object
+      required:
+          - objGuid
+          - email
+          - filePath
+          - fileName
+      properties:
+        objGuid: 
+           type: string
+           format: byte
+           description: 'An Object Guid as base64'
+        email: 
+           type: string
+           format: email
+           description: 'The recipients email address' 
+        filePath:
+           type: string
+           description: 'The path to write the Object Store document to. Leave as null for writing to root.'
+        fileName:
+           type: string
+           description: 'The file name given to the Object Store document identified by the ObjGuid.'   
+    filetransfer_response:
+      type: object
+      properties:
+        objGuid: 
+          type: string
+        transferId:
+          type: string
+    filetransferstatus_response:
+      type: object
+      properties:
+        transferId: 
+          type: string
+        percentTransfered:
+          type: integer
+        startDeliveryDtm: 
+          type: string
+          description: Start delivery date and time + UTC Offset 
+          example: "2013-09-15T05:53:00-08:00"
+        endDeliveryDtm: 
+          type: string
+          description: End delivery date and time + UTC Offset 
+          example: "2013-09-15T05:54:00-08:00"
+        error:
+          type: boolean
+          description: Did an error occur 
+        lastErrorMessage: 
+          type: string     
+          description: Last error message
+        fileSize:
+          type: integer
+          format: int64
+          description: File Size in bytes  
+          example: "1223440"
+        fileName: 
+          type: string
+          description: File name to be delivered 
+        filePath: 
+          type: string
+          description: Expected file delivery path
+        mime: 
+          type: string
+          description: File mime type
+    fileterminate_request:
+              description: A list of transferIds to cancel
+              required:
+               - transferIds
+              properties:
+                transferIds:
+                   type: array
+                   items:
+                     type: string      
+    fileterminate_response:
+      type: object
+      properties:
+        response: 
+          type: string         
+    ordsPush_response:
+      type: object
+      properties:
+        filename:
+          type: string
+        mimetype: 
+          type: string
+        sizeval: 
+          type: string  
+    ping_response:
+      type: string
