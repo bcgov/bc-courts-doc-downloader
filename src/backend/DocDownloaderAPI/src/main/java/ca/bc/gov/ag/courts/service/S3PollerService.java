@@ -108,7 +108,7 @@ public class S3PollerService {
 		logger.debug("S3 Query for fileName " + fileName);
 		
 		try {
-			Thread.sleep(4000);
+			Thread.sleep(10000);// polling period. 
 			return sService.objectExists(props.getS3AccessBucket(), fileName);
 		} catch (Exception e) {
 			logger.error("Error while querying S3 object store: " + e.getMessage());
