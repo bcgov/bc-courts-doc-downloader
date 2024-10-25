@@ -53,7 +53,7 @@ public class Job implements Serializable {
 	@JsonProperty("endDeliveryDtm")
 	private String endDeliveryDtm;
 	@JsonProperty("percentageComplete")
-	private Integer percentageComplete;
+	private float percentageComplete;
 	@JsonProperty("ordsFileName")
 	private String ordsFileName;
 	@JsonProperty("fileName")
@@ -158,7 +158,7 @@ public class Job implements Serializable {
 	}
 
 	@JsonProperty("percentageComplete")
-	public Integer getPercentageComplete() {
+	public float getPercentageComplete() {
 		return percentageComplete;
 	}
 

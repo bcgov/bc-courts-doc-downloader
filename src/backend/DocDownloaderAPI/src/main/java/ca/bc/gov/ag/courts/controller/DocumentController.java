@@ -106,7 +106,7 @@ public class DocumentController implements DocumentApi {
 	
 			FiletransferstatusResponse resp = new FiletransferstatusResponse();
 			resp.setTransferId(job.getId());
-			resp.setPercentTransfered(job.getPercentageComplete());
+			resp.setPercentTransfered((int)job.getPercentageComplete());
 			resp.setStartDeliveryDtm(job.getStartDeliveryDtm());
 			resp.setEndDeliveryDtm(job.getEndDeliveryDtm());
 			resp.setFileName(job.getFileName());
