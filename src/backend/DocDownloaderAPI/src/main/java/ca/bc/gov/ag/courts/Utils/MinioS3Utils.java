@@ -49,7 +49,7 @@ public class MinioS3Utils {
 
     private MinioClient minioClient;
     
-    //TODO - Need to find out what this is for the S3 storage. 
+    //TODO - Need to find out what, or if, there is a max file size that may be written to the S3 storage. 
     private final long MAX_FILE_SIZE = 1073741824;
     
     private AppProperties props; 
