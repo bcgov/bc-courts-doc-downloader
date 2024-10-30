@@ -2,7 +2,9 @@ package ca.bc.gov.ag.courts.Utils;
 
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -78,7 +80,9 @@ public class AuthHelper {
 		URL url = new URL(this.authority + "oauth2/v2.0/token");
 		logger.debug("GetAccessToken calling MS endpoint " + url.toString());
 		
-		HttpClient client = HttpClient.newHttpClient();
+		HttpClient client = HttpClient.newBuilder()
+            .proxy(ProxySelector.of(new InetSocketAddress("swpxkam.gov.bc.ca", 8080)))
+            .build();
 		
 		HttpRequest request = HttpRequest.newBuilder()
 				  .uri(URI.create(this.authority + "oauth2/v2.0/token"))
