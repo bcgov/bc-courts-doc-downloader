@@ -2,11 +2,16 @@ package ca.bc.gov.ag.courts.service;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
@@ -69,7 +75,18 @@ public class MSGraphServiceImpl implements MSGraphService {
     	
         URI uri = new URI(props.getMsgEndpointHost() + "v1.0/me/drive/root:/" + fileFolder + "/" + fileName + ":/createUploadSession");
         
-        RestTemplate restTemplate = new RestTemplate();
+        // Define proxy settings for HttpClient
+		 HttpHost proxy = new HttpHost("swpxkam.gov.bc.ca", 80800);
+
+		 // Configure the CloseableHttpClient with proxy
+		 CloseableHttpClient httpClient = HttpClients.custom()
+				.setProxy(proxy)
+				.build();
+
+		 // Create RestTemplate with HttpComponentsClientHttpRequestFactory
+		 HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+		
+		RestTemplate restTemplate = new RestTemplate(requestFactory);
         
         // ref: https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0 regarding behavior 
         String jsonBody = "{\"item\":{\"@microsoft.graph.conflictBehavior\": \"replace\",\"name\": \"" + fileName + "\"}}";
@@ -131,7 +148,18 @@ public class MSGraphServiceImpl implements MSGraphService {
 		URI uri = new URI(props.getMsgEndpointHost() + "v1.0/users/" + userId + "/drive/root:/" + fileFolder + "/"
 				+ fileName + ":/createUploadSession");
 
-		RestTemplate restTemplate = new RestTemplate();
+		// Define proxy settings for HttpClient
+		HttpHost proxy = new HttpHost("swpxkam.gov.bc.ca", 80800);
+
+		// Configure the CloseableHttpClient with proxy
+		CloseableHttpClient httpClient = HttpClients.custom()
+			   .setProxy(proxy)
+			   .build();
+
+		// Create RestTemplate with HttpComponentsClientHttpRequestFactory
+		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+
+		RestTemplate restTemplate = new RestTemplate(requestFactory);
 
 		// ref: https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0 regarding behavior
 		String jsonBody = "{\"item\":{\"@microsoft.graph.conflictBehavior\": \"replace\",\"name\": \"" + fileName + "\"}}";
@@ -249,9 +277,12 @@ public class MSGraphServiceImpl implements MSGraphService {
 
 		String useridQuery = props.getMsgEndpointHost() + "v1.0/users('" + email + "')";
 
+		//Setting needed proxy
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("swpxkam.gov.bc.ca", 8080));
+
 		HttpURLConnection connection = null;
 		URL url = new URL(useridQuery);
-		connection = (HttpURLConnection) url.openConnection();
+		connection = (HttpURLConnection) url.openConnection(proxy);
 		connection.setRequestMethod("GET");
 		connection.setRequestProperty("Authorization", "Bearer " + accessToken);
 		connection.setRequestProperty("Accept", "*/*");
