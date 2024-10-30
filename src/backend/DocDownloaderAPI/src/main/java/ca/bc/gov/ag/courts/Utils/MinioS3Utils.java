@@ -76,7 +76,6 @@ public class MinioS3Utils {
 		minioClient = MinioClient.builder().endpoint(props.getS3AccessEndpoint())
 				.credentials(props.getS3AccessKeyid(), props.getS3AccessSecretkey())
 				.region("east")
-                .httpClient(httpClient)
 				.build();
 		
 	}
