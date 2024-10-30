@@ -3,6 +3,8 @@ package ca.bc.gov.ag.courts.Utils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import jakarta.annotation.PostConstruct;
+import okhttp3.OkHttpClient;
 
 @Component
 public class MinioS3Utils {
@@ -60,12 +63,20 @@ public class MinioS3Utils {
     
     @PostConstruct
 	private void postConstruct() {
+
+        //Setting needed proxy
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("swpxkam.gov.bc.ca", 8080));
+
+        //Setting OkHttpClient with proxy
+        OkHttpClient httpClient = new OkHttpClient().newBuilder()
+                        .proxy(proxy).build();
 		
 		// Connection to S3 Compatible Server AG server (user creds)
     	// Note that region (east) is required in the constructor even though it's not required by the AG server. 
 		minioClient = MinioClient.builder().endpoint(props.getS3AccessEndpoint())
 				.credentials(props.getS3AccessKeyid(), props.getS3AccessSecretkey())
 				.region("east")
+                .httpClient(httpClient)
 				.build();
 		
 	}
